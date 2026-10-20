@@ -1,0 +1,22 @@
+{
+  "name": "tsgf",
+  "version": "1.0.0",
+  "description": "Task & Software Generation Framework (The Software Growth Factory) for Google Antigravity & AI Agent Runtimes",
+  "scripts": {
+    "dev": "npm --prefix website run dev",
+    "build": "npm --prefix website run build",
+    "preview": "npm --prefix website run preview",
+    "test": "bash tests/run-safety.sh",
+    "evals": "bash evals/run-evals.sh"
+  },
+  "keywords": [
+    "antigravity",
+    "ai-agents",
+    "autonomous-software-factory",
+    "claude-code",
+    "codex",
+    "cursor"
+  ],
+  "author": "TSGF Contributors",
+  "license": "MIT"
+}
