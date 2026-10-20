@@ -31,45 +31,82 @@
 
 ---
 
-## Quick Start
+## 🚀 Building an Application in a Fresh Repository (Zero to Production)
 
-### 1. Installation
+If you have a fresh, empty repository and want to build an application from scratch with autonomous agent lanes, follow these 5 steps:
 
-In your target project directory:
-
+### 1. Initialize your repository
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gnanesh-16/TSGF/main/get.sh | bash
+mkdir my-new-app && cd my-new-app
+git init
+git commit --allow-empty -m "chore: initial commit"
 ```
 
-Or clone and install locally:
-
+### 2. Install TSGF with one command
+Run the universal installer inside your repository:
 ```bash
-git clone https://github.com/gnanesh-16/TSGF.git
-./TSGF/install.sh /path/to/your-project
+curl -fsSL https://raw.githubusercontent.com/gnanesh-16/TSGF/main/install.sh | bash
 ```
+> **What this does:**
+> - Installs all 8 skills into `.agents/skills/` (for **Google Antigravity** & Codex) and `.claude/skills/` (for Claude Code).
+> - Arms the 6 deterministic safety hooks in `hooks/` and injects guard rules into `AGENTS.md`.
+> - Prepares the isolated worktree lane directories (`.agents/worktrees/`).
 
-### 2. Onboard Your Project
-
-In your project repository with Claude Code / Antigravity agent:
-
+### 3. Run the Onboarding Wizard
+Open **Google Antigravity** (or launch Claude Code) in your project directory:
 ```bash
 /tsgf onboard
 ```
+The interactive wizard will:
+- 🔍 Check local tools (`git`, `gh`, `python3`, `node`)
+- 🐙 Link your GitHub Project board (or create standard columns: `Backlog` · `Ready` · `Building` · `QA` · `Review` · `Done`)
+- ⚙️ Set up your project's test command (e.g., `npm test`, `pytest`, `cargo test`)
 
-The interactive 8-step wizard configures:
-- 🔍 Environment & tool check (`git`, `gh`, `python3`, `node`)
-- 🐙 GitHub Project & repository linkage
-- 📋 Kanban column verification (`Backlog` · `Ready` · `Building` · `QA` · `Review` · `Done` · `Blocked`)
-- 🛡️ Guard hooks installation into `.claude/settings.json`
-- ⚙️ Test & verification commands configuration
-
-### 3. Run the Factory
-
-```bash
-/tsgf run my-app
+### 4. Seed Your Backlog (Describe Your Application)
+You don't need to manually break down 50 Jira tickets. Just tell your agent what you want to build:
+```text
+"I want to build a real-time Kanban dashboard with user auth, React frontend, SQLite database, and REST API."
 ```
+TSGF automatically runs the **Wave Planner** (`skills/tsgf/`):
+- Formats tickets with 18-point readiness criteria.
+- Clusters tasks into dependency-ordered waves:
+  - **Wave 1 (Data Foundation)**: DB models, migrations, test harness.
+  - **Wave 2 (Core Business Logic)**: API endpoints, auth tokens, unit test suites (TDD).
+  - **Wave 3 (Frontend & Visuals)**: Interactive UI components, dual-viewport visual proof sheets (1200px + 375px).
+  - **Wave 4 (E2E & Hardening)**: Integration flows, error boundaries, performance passes.
 
-Add cards to `Ready`, and watch the board drain itself into merged, verified PRs!
+### 5. Launch the Factory & Walk Away
+```bash
+/tsgf run
+```
+TSGF takes over the entire execution cycle:
+1. **`tsgf-build`** spins up an isolated worktree under `.agents/worktrees/wt-build-1`, writes minimal TDD code (<400 lines diff), and creates a draft PR.
+2. **`tsgf-qa`** runs acceptance tests, captures dual-viewport Playwright screenshots, and bounces bugs back to `Backlog` if regressions are found.
+3. **`tsgf-review`** conducts adversarial review, verifies regression memory, and checks merge policies.
+4. **`tsgf-merge-gate.sh`** atomically locks, validates tests, merges the PR to `main`, and unlocks the next card.
+
+### 6. Monitor in Real-Time (Live Web Dashboard)
+Launch the embedded live dashboard to watch your factory build your app:
+```bash
+npm run dev
+# Or open website/index.html in any browser
+```
+Inspect worker lanes in real-time, view Playwright visual proof sheets, check the safety ledger, and watch your board drain to `Done`!
+
+---
+
+## Quick Reference Commands
+
+| Scenario | Command | Action |
+|---|---|---|
+| **Install in new repo** | `curl -fsSL https://raw.githubusercontent.com/gnanesh-16/TSGF/main/install.sh \| bash` | Configures skills, hooks, and rules |
+| **Onboard project** | `/tsgf onboard` | Sets up GitHub board, test runner, and config |
+| **Plan waves** | `/tsgf wave plan [N]` | Plans dependency waves for N backlog cards |
+| **Run the factory** | `/tsgf run` | Autonomously drains `Ready` column to `Done` |
+| **Check factory status** | `/tsgf status` | Shows active worktrees, PRs, and lane states |
+| **Collect bug signals** | `/tsgf-collect sentry` | Ingests Sentry/PostHog errors into Backlog |
+| **Emergency stop** | `./scripts/tsgf-stop.sh` | Terminates worker processes and cleans worktrees |
+| **Launch Dashboard** | `npm run dev` | Opens real-time factory dashboard at localhost:5173 |
 
 ---
 
