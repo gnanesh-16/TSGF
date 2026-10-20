@@ -1,0 +1,499 @@
+{
+  "title": "TSGF Autonomous Software Factory Skill Map",
+  "pack": "tsgf",
+  "branch": "main @ v1.0.0",
+  "sourcesBase": "https://github.com/gnanesh-16/TSGF/blob/main/",
+  "kinds": {
+    "public": "Command or skill triggered directly by the developer or orchestrator",
+    "lane": "Autonomous worker lane dispatched by /tsgf run wave workflow",
+    "hook": "Deterministic security guard enforcing safety constraints",
+    "script": "Core deterministic CLI script / engine",
+    "board": "State system (GitHub Project, config, ledgers, locks)",
+    "verb": "Granular critique, audit, fix, and polish commands",
+    "external": "Shared engineering discipline (TDD, Review, Debugging)",
+    "advanced": "TSGF exclusive capabilities beyond standard software factories"
+  },
+  "nodes": [
+    {
+      "id": "tsgf",
+      "label": "/tsgf",
+      "kind": "public",
+      "what": "The master orchestrator: 5 verbs (onboard, lint, status, run, stop) taking the 7-column Kanban board (Backlog · Ready · Building · QA · Review · Blocked · Done) from empty to drained.",
+      "when": "When you type /tsgf <verb>, start an autonomous wave, or check overall factory status.",
+      "how": "The session acts strictly as an orchestrator: never implements product code directly. It coordinates wave planning, claims cards, dispatches isolated lane workers, and merges through the merge gate.",
+      "source": ["skills/tsgf/SKILL.md", "skills/tsgf/references/writing-standard.md"],
+      "verbs": ["onboard", "lint", "status", "run", "stop"],
+      "sublabel": "onboard · lint · status · run · stop",
+      "opensView": "tsgf-orchestrator",
+      "author": "Gnanesh Balusa (gnanesh-16)"
+    },
+    {
+      "id": "tsgf-run",
+      "label": "/tsgf run",
+      "kind": "public",
+      "what": "The autonomous wave loop: repeatedly dispatches task waves from the Ready column until the board is drained or a halt gate fires.",
+      "when": "When you run /tsgf run [slug] [--low|--high]. Also acts as the resume command after manual intervention.",
+      "how": "Checks rate limit bucket with tsgf-gh-guard.sh, plans wave DAG with tsgf-wave-plan.py, claims cards by assignee, dispatches worker lanes, reconciles results, and reports progress.",
+      "source": ["skills/tsgf/references/run-workflow.md", "workflows/tsgf-wave.js"],
+      "verbs": ["--low", "--high", "--codex"],
+      "sublabel": "Autonomous Wave Loop",
+      "opensView": "tsgf-run",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-onboard",
+      "label": "/tsgf onboard",
+      "kind": "public",
+      "what": "An 8-step setup wizard (System Checks · GitHub Remote · Project Board · Base Branch · AGENTS.md · Policies · Telemetry Sources · Review) that initializes and verifies repository settings.",
+      "when": "When running /tsgf onboard on a new repo or to self-repair missing skills and guard hooks.",
+      "how": "Executes tsgf-setup.py and tsgf-env-check.sh, verifies github connectivity, merges hook configurations into .claude/settings.json, and writes AGENTS.md managed blocks.",
+      "source": ["skills/tsgf/references/onboard.md", "scripts/tsgf-setup.py"],
+      "sublabel": "8-step setup wizard",
+      "opensView": "tsgf-onboard",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-lint",
+      "label": "/tsgf lint",
+      "kind": "public",
+      "what": "Pre-flight readiness auditor walking Ready cards to ensure parseable Acceptance Criteria, explicit dependencies, and scope limits before execution.",
+      "when": "Run before starting a wave loop, especially after /tsgf-collect filed new backlog tickets.",
+      "how": "Validates AC checklist syntax, enforces the <400 line PR cap, verifies blocker edges, and routes ambiguous cards for refinement.",
+      "source": ["skills/tsgf/SKILL.md"],
+      "sublabel": "Check ticket readiness",
+      "opensView": "tsgf-lint",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-status",
+      "label": "/tsgf status",
+      "kind": "public",
+      "what": "Read-only snapshot of the active configuration, all 7 Kanban columns in board order, and currently in-flight workers.",
+      "when": "When running /tsgf status to inspect board and lane state without modifying anything.",
+      "how": "Runs tsgf-status.py to read GitHub Project items or local board state and outputs a formatted table.",
+      "source": ["skills/tsgf/references/status.md", "scripts/tsgf-status.py"],
+      "sublabel": "Read-only board snapshot",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-stop",
+      "label": "/tsgf stop",
+      "kind": "public",
+      "what": "Graceful shutdown: safely stops the active wave, posts checkpoint status comments, releases card claims, and clears inflight locks.",
+      "when": "When you run /tsgf stop or need to pause an autonomous loop.",
+      "how": "Executes tsgf-stop.sh, signals worker processes cleanly, updates GitHub card assignees, and removes .claude/tsgf/inflight/ locks so the next run can resume.",
+      "source": ["scripts/tsgf-stop.sh"],
+      "sublabel": "Clean worker termination",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-collect",
+      "label": "/tsgf-collect",
+      "kind": "public",
+      "what": "Signal collection engine: mines errors, user friction, and architectural debt from Sentry, PostHog, GitHub issues, and merged PRs, filing verified cards into Backlog.",
+      "when": "When running /tsgf-collect or /tsgf-collect <sentry|posthog|issues|prs|architecture>.",
+      "how": "Queries telemetry APIs, sends candidates to fresh verifier sub-agents, formats cards to TSGF ticket standard, deduplicates fingerprints, and files to Backlog.",
+      "source": ["skills/tsgf-collect/SKILL.md", "skills/tsgf-collect/README.md"],
+      "verbs": ["sentry", "posthog", "issues", "prs", "architecture", "custom"],
+      "sublabel": "Telemetry & signal miner",
+      "opensView": "tsgf-collect",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "ui-refine-loop",
+      "label": "/ui-refine-loop",
+      "kind": "public",
+      "what": "Unattended critique-then-fix refinement loop polishing a frontend route or component to state-of-the-art aesthetics with Before | After evidence.",
+      "when": "When running /ui-refine-loop <route|component> to polish UI styling, contrast, rhythm, and motion.",
+      "how": "Runs iterative check-fix rounds: parallel critique & audit sub-agents rank typed problems, routed fix verbs apply changes, and a draft PR is opened.",
+      "source": ["skills/ui-refine-loop/SKILL.md", "workflows/ui-refine-loop.js"],
+      "verbs": ["critique", "audit", "polish", "distill", "layout", "typeset", "adapt"],
+      "sublabel": "UI critique & polish loop",
+      "opensView": "ui-refine-loop",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "visual",
+      "label": "/visual",
+      "kind": "public",
+      "what": "Generates a self-contained, interactive single-page HTML report: branch recap, wave execution plan, or architecture diagram map.",
+      "when": "When you run /visual recap, /visual plan, or /visual <path>.",
+      "how": "Collects git diff facts and plan state, renders into an inline interactive HTML/CSS canvas template, and previews cleanly.",
+      "source": ["skills/visual/SKILL.md"],
+      "verbs": ["recap", "plan", "explore"],
+      "sublabel": "Interactive visualizer",
+      "opensView": "visual",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-sync",
+      "label": "/tsgf-sync",
+      "kind": "public",
+      "what": "Safe git synchronization skill: groups changes into atomic semantic commits, merge-pulls upstream, and non-force pushes current branch.",
+      "when": "When syncing code at the conclusion of a task.",
+      "how": "Stages logical paths, validates secrets are excluded, enforces conventional commit headers, and protects against force-push hazards.",
+      "source": ["skills/tsgf-sync/SKILL.md"],
+      "sublabel": "Atomic commits & safe push",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-build",
+      "label": "tsgf-build",
+      "kind": "lane",
+      "what": "Lane 1 Builder: takes a Ready card into an isolated worktree, writes minimal safe diff test-first under the 400-line PR cap, opens draft PR, and moves card to QA.",
+      "when": "Dispatched by the wave loop for Ready cards labelled bug or feature.",
+      "how": "Spawns under .claude/worktrees/<id>, builds test-first using TDD, writes PR marker blocks via tsgf-pr-body.sh, and moves card to QA. Never merges.",
+      "source": ["skills/tsgf-build/SKILL.md", "skills/tsgf-build/README.md"],
+      "sublabel": "Isolated worktree · minimal diff",
+      "opensView": "tsgf-build",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-qa",
+      "label": "tsgf-qa",
+      "kind": "lane",
+      "what": "Lane 2 Tester: proves Acceptance Criteria with running tests, automated screenshots, and test-gap analysis. Passes card to Review or bounces back to Build.",
+      "when": "Dispatched for cards in QA, and straight from Ready for 'qa'-labelled cards (which skip Building).",
+      "how": "Runs project test commands, executes headless browser tests, captures full-page visual proof, updates PR visual blocks, and marks AC checkboxes.",
+      "source": ["skills/tsgf-qa/SKILL.md", "skills/tsgf-qa/README.md"],
+      "sublabel": "Runtime verification & screenshots",
+      "opensView": "tsgf-qa",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "tsgf-review",
+      "label": "tsgf-review",
+      "kind": "lane",
+      "what": "Lane 3 Reviewer: conducts adversarial review, verifies historical review memory, validates project merge policies, and triggers the merge gate.",
+      "when": "Dispatched for cards in Review that passed QA.",
+      "how": "Forms independent hypotheses, audits diff against review memory ledger, verifies merge policy via tsgf-merge-policy.py, and merges through tsgf-merge-gate.sh.",
+      "source": ["skills/tsgf-review/SKILL.md", "skills/tsgf-review/README.md"],
+      "sublabel": "Adversarial review & merge gate",
+      "opensView": "tsgf-review",
+      "author": "TSGF Core"
+    },
+    {
+      "id": "gh-board",
+      "label": "GitHub Project Board",
+      "kind": "board",
+      "what": "The single source of truth: 7 columns (Backlog, Ready, Building, QA, Review, Blocked, Done) and 3 routing labels (qa, bug, feature).",
+      "when": "Read and written on every wave by orchestrator and worker lanes.",
+      "how": "Cards move via gh project item-edit; assignees act as worker mutexes; PR threads store lane audit comments.",
+      "source": ["skills/tsgf/references/run-workflow.md"],
+      "sublabel": "7 Kanban columns"
+    },
+    {
+      "id": "tsgf-config",
+      "label": "tsgf config",
+      "kind": "board",
+      "what": "Per-project JSON configuration storing board ID, base branch, verification commands, merge policy, model tier, and collection settings.",
+      "when": "Written during /tsgf onboard; read at the start of every wave and lane run.",
+      "how": "Stored at .claude/tsgf/config.json with active project pointer.",
+      "source": ["scripts/tsgf-setup.py"],
+      "sublabel": ".claude/tsgf/config.json"
+    },
+    {
+      "id": "base-branch",
+      "label": "base branch",
+      "kind": "board",
+      "what": "The target repository base branch (main/master/staging). Cards reach Done only when their merge commit lands on this branch.",
+      "when": "Target of all worker PRs; updated only through atomic squash-merge gate.",
+      "how": "Protected by guard-protected-push.py against direct or force pushes.",
+      "sublabel": "Target branch (e.g. main)"
+    },
+    {
+      "id": "run-manifest",
+      "label": "run manifest ledger",
+      "kind": "board",
+      "what": "Per-run markdown ledger at docs/tsgf/runs/<date>.md recording every wave, card, execution duration, and final outcome.",
+      "when": "Appended during each wave reconciliation phase.",
+      "how": "Documents audit trail: | #N | lanesRun | finalStatus | column | detail |.",
+      "source": ["skills/tsgf/references/run-workflow.md"],
+      "sublabel": "docs/tsgf/runs/*.md"
+    },
+    {
+      "id": "review-memory",
+      "label": "review memory ledger",
+      "kind": "board",
+      "what": "Persistent memory of past review regressions, anti-patterns, and project smells stored at .claude/tsgf/review-memory.json.",
+      "when": "Queried during Lane 3 Review pass to catch recurring architectural defects.",
+      "how": "Updated whenever a reviewer identifies an antipattern or a PR is bounced.",
+      "sublabel": ".claude/tsgf/review-memory.json"
+    },
+    {
+      "id": "taste-file",
+      "label": "taste file",
+      "kind": "board",
+      "what": "Design taste and direction guide at docs/design/taste.md defining visual hierarchy, type scales, and color boundaries for ui-refine-loop.",
+      "when": "Read by every critique, audit, and fix pass during UI refinement.",
+      "how": "Records explicit user design preferences and anti-patterns to avoid.",
+      "sublabel": "docs/design/taste.md"
+    },
+    {
+      "id": "needs-you",
+      "label": "Blocked · 🙋 Needs You",
+      "kind": "board",
+      "what": "Card parked in Blocked requiring human action (money, credentials, destructive migration, or high risk diff).",
+      "when": "Merge gate exits 7 (sensitive policy) or 8 (manual migration step).",
+      "how": "Posts an explicit checklist comment; resumes when user comments 'done' or applies label.",
+      "sublabel": "Human checkpoint gate"
+    },
+    {
+      "id": "guard-worktree-path",
+      "label": "guard-worktree-path",
+      "kind": "hook",
+      "what": "Denies git worktree add or move whose target directory escapes .claude/worktrees/ or .agents/worktrees/.",
+      "when": "PreToolUse hook matching shell commands.",
+      "how": "Resolves target path against repository boundaries and exits 1 if outside approved worktree dirs.",
+      "source": ["hooks/guard-worktree-path.py"],
+      "sublabel": "Confine worktrees to sandbox"
+    },
+    {
+      "id": "guard-secrets",
+      "label": "guard-secrets",
+      "kind": "hook",
+      "what": "Denies reading, cat-ing, or piping dotenv files, SSH private keys, .npmrc, or cloud credential JSON files.",
+      "when": "PreToolUse hook on shell, read, and grep operations.",
+      "how": "Regex matches file targets against sensitive credential formats and blocks unauthorized reads.",
+      "source": ["hooks/guard-secrets.py"],
+      "sublabel": "Block credential leaks"
+    },
+    {
+      "id": "guard-key-literals",
+      "label": "guard-key-literals",
+      "kind": "hook",
+      "what": "Scans file edits and writes for live high-entropy API keys (OpenAI, Anthropic, GitHub, AWS, Stripe) and rejects changes.",
+      "when": "PreToolUse on file edit, write, and patch tools.",
+      "how": "Runs token entropy and prefix detection; reports line numbers of detected secrets without leaking values.",
+      "source": ["hooks/guard-key-literals.py"],
+      "sublabel": "Block unredacted API keys"
+    },
+    {
+      "id": "guard-delete-outside",
+      "label": "guard-delete-outside",
+      "kind": "hook",
+      "what": "Denies rm, rmdir, find -delete, or git clean targeting outside repository root, /, or ~.",
+      "when": "PreToolUse hook on shell command execution.",
+      "how": "Canonicalizes paths and blocks destructive commands outside project boundaries.",
+      "source": ["hooks/guard-delete-outside.py"],
+      "sublabel": "Prevent accidental filesystem deletes"
+    },
+    {
+      "id": "guard-protected-push",
+      "label": "guard-protected-push",
+      "kind": "hook",
+      "what": "Blocks direct or force git push commands to main, master, or configured base branches.",
+      "when": "PreToolUse hook on git push operations.",
+      "how": "Inspects git push refspecs and active branch; requires PR workflow for all mainline code.",
+      "source": ["hooks/guard-protected-push.py"],
+      "sublabel": "Enforce branch protection"
+    },
+    {
+      "id": "cleanup-wt",
+      "label": "cleanup-wt",
+      "kind": "hook",
+      "what": "Prunes worktrees and local branches already merged into base branch; writes audit log to recovery.json.",
+      "when": "Triggered post-merge by the merge gate and at session start.",
+      "how": "Validates git ancestry before removal; never deletes unmerged branches.",
+      "source": ["hooks/cleanup-wt.py"],
+      "sublabel": "Auto-cleanup merged worktrees"
+    },
+    {
+      "id": "wave-plan",
+      "label": "tsgf-wave-plan.py",
+      "kind": "script",
+      "what": "Dependency graph solver computing wave concurrency: parses 'Blocked by' edges, prioritizes bugs, and routes qa cards.",
+      "when": "Called at the start of every wave iteration.",
+      "how": "Builds directed acyclic graph of Ready cards, checks inflight locks, and returns eligible card batches.",
+      "source": ["scripts/tsgf-wave-plan.py", "scripts/tsgf-wave-plan.sh"],
+      "sublabel": "Wave DAG Planner"
+    },
+    {
+      "id": "merge-gate",
+      "label": "tsgf-merge-gate.sh",
+      "kind": "script",
+      "what": "The atomic gate to the base branch: locks repo, re-proves test suites, validates merge policy, and squash-merges.",
+      "when": "Called by Lane 3 Reviewer once review passes.",
+      "how": "Takes mkdir atomic lock, proves HEAD against target, evaluates tsgf-merge-policy.py, runs allowed migrations, and squash-merges.",
+      "source": ["scripts/tsgf-merge-gate.sh"],
+      "sublabel": "Atomic Merge Gate"
+    },
+    {
+      "id": "pr-body",
+      "label": "tsgf-pr-body.sh",
+      "kind": "script",
+      "what": "Surgical PR body reader/writer updating individual marker blocks (status, problem, solution, ac, history, visual, risk).",
+      "when": "Used by Build, QA, and Review lanes to update their sections without clobbering other lanes.",
+      "how": "Replaces content between HTML comment markers <!-- tsgf:<block>:begin --> and <!-- tsgf:<block>:end -->.",
+      "source": ["scripts/tsgf-pr-body.sh"],
+      "sublabel": "PR marker block manager"
+    },
+    {
+      "id": "gh-guard",
+      "label": "tsgf-gh-guard.sh",
+      "kind": "script",
+      "what": "Rate-limit token-bucket protection preventing GitHub CLI rate limit lockouts during autonomous runs.",
+      "when": "Wraps all gh API calls across orchestrator and lane scripts.",
+      "how": "Checks rate_limit remaining; pauses execution before hitting quota exhaustion.",
+      "source": ["scripts/tsgf-gh-guard.sh"],
+      "sublabel": "Token-bucket rate guard"
+    },
+    {
+      "id": "multi-host-engine",
+      "label": "Multi-Host Engine",
+      "kind": "advanced",
+      "what": "Native cross-runtime interoperability supporting Antigravity IDE, Claude Code, OpenAI Codex, and Cursor from a single unified .agents/ infrastructure.",
+      "when": "Zero-friction agent switching across developer environments.",
+      "how": "Maintains canonical skills, scripts, and workflows in .agents/ and dynamically establishes host symlinks (.claude/, .codex/).",
+      "source": ["scripts/tsgf-host.sh", "install.sh"],
+      "sublabel": "Antigravity · Claude · Codex · Cursor"
+    },
+    {
+      "id": "auto-remediation-loop",
+      "label": "Auto-Remediation Feedback",
+      "kind": "advanced",
+      "what": "Self-healing closed feedback loop: failing QA tests or Review requests bounce the card back to Building with structured diff-level failure context.",
+      "when": "Triggered whenever test assertions fail or reviewer flags architectural debt.",
+      "how": "Annotates PR with failure diagnosis, returns card to Building lane, and re-triggers isolated worktree fix cycle automatically.",
+      "sublabel": "Closed-loop self healing"
+    },
+    {
+      "id": "visual-proof-engine",
+      "label": "Visual Proof Engine",
+      "kind": "advanced",
+      "what": "Automated headless browser screenshot capture across light/dark themes and responsive breakpoints, attached directly to PR visual blocks.",
+      "when": "Executed by Lane 2 (tsgf-qa) for UI components and routes.",
+      "how": "Captures full-page and crop screenshots pinned to commit SHA, rendering Before/After visual comparison sheets.",
+      "source": ["skills/tsgf-qa/SKILL.md"],
+      "sublabel": "Headless screenshot proof"
+    },
+    {
+      "id": "tdd",
+      "label": "tdd",
+      "kind": "external",
+      "what": "Test-driven development discipline: public interface tests, red before green, one vertical slice at a time.",
+      "when": "Followed by tsgf-build for every feature and bug ticket.",
+      "how": "Writes failing test first, writes minimal implementation to pass, then refactors under green test coverage.",
+      "sublabel": "Red-Green-Refactor"
+    },
+    {
+      "id": "diagnosing-bugs",
+      "label": "diagnosing-bugs",
+      "kind": "external",
+      "what": "Scientific root cause diagnosis: tight reproduction feedback loop, hypothesis formulation, and regression test.",
+      "when": "Reached by tsgf-build on bug-labelled cards and by tsgf-qa on test failures.",
+      "how": "Requires reproducing command before theorizing; hands off to implementation with reproducible test case.",
+      "sublabel": "Reproduce · Hypothesize · Fix"
+    },
+    {
+      "id": "code-review",
+      "label": "code-review",
+      "kind": "external",
+      "what": "Two-axis code inspection: Standards (repo architectural rules & Fowler smells) and Spec (verifying acceptance criteria).",
+      "when": "Run by tsgf-build against its own diff and by tsgf-review for merge approval.",
+      "how": "Evaluates diff against merge base, flags architectural debt, and checks historical regression memory.",
+      "sublabel": "Standards & Spec review"
+    },
+    {
+      "id": "v-critique",
+      "label": "critique",
+      "kind": "verb",
+      "what": "UX design assessment scored /20 across specificity, visual hierarchy, typography, color harmony, and composition.",
+      "when": "Run by ui-refine-loop on UI route screenshots.",
+      "how": "Inspects desktop/mobile screenshots in light/dark mode and produces ranked findings.",
+      "sublabel": "Visual design critique"
+    },
+    {
+      "id": "v-audit",
+      "label": "audit",
+      "kind": "verb",
+      "what": "Technical frontend audit scored /20 across accessibility (a11y), responsive layout, performance, and code integrity.",
+      "when": "Run by ui-refine-loop in parallel with design critique.",
+      "how": "Audits DOM semantics, color contrast, and layout shift indicators.",
+      "sublabel": "A11y & tech quality audit"
+    },
+    {
+      "id": "v-polish",
+      "label": "polish",
+      "kind": "verb",
+      "what": "Final aesthetic pass over touched files correcting subtle micro-spacing, alignment inconsistencies, and token usage.",
+      "when": "Always the concluding step of every UI refinement fix round.",
+      "how": "Polishes touched code without making structural changes.",
+      "sublabel": "Micro-alignment pass"
+    }
+  ],
+  "edges": [
+    { "from": "tsgf", "to": "tsgf-run", "label": "routes run" },
+    { "from": "tsgf", "to": "tsgf-onboard", "label": "routes onboard" },
+    { "from": "tsgf", "to": "tsgf-lint", "label": "routes lint" },
+    { "from": "tsgf", "to": "tsgf-status", "label": "routes status" },
+    { "from": "tsgf", "to": "tsgf-stop", "label": "routes stop" },
+    { "from": "tsgf", "to": "gh-board", "label": "drains board" },
+    { "from": "tsgf", "to": "tsgf-config", "label": "reads configuration" },
+    { "from": "tsgf-collect", "to": "gh-board", "label": "files to Backlog" },
+    { "from": "tsgf-run", "to": "wave-plan", "label": "plans wave DAG" },
+    { "from": "tsgf-run", "to": "gh-guard", "label": "rate protected by" },
+    { "from": "tsgf-run", "to": "tsgf-build", "label": "dispatches Build lane" },
+    { "from": "tsgf-run", "to": "tsgf-qa", "label": "dispatches QA lane" },
+    { "from": "tsgf-run", "to": "tsgf-review", "label": "dispatches Review lane" },
+    { "from": "tsgf-run", "to": "run-manifest", "label": "appends execution log" },
+    { "from": "tsgf-run", "to": "multi-host-engine", "label": "executes across" },
+    { "from": "tsgf-build", "to": "tsgf-qa", "label": "hands off via draft PR" },
+    { "from": "tsgf-build", "to": "guard-worktree-path", "label": "constrained by" },
+    { "from": "tsgf-build", "to": "guard-secrets", "label": "constrained by" },
+    { "from": "tsgf-build", "to": "guard-key-literals", "label": "constrained by" },
+    { "from": "tsgf-build", "to": "guard-delete-outside", "label": "constrained by" },
+    { "from": "tsgf-build", "to": "pr-body", "label": "initializes PR blocks" },
+    { "from": "tsgf-build", "to": "tdd", "label": "builds test-first" },
+    { "from": "tsgf-build", "to": "diagnosing-bugs", "label": "diagnoses bug cards" },
+    { "from": "tsgf-qa", "to": "tsgf-review", "label": "hands off on green tests" },
+    { "from": "tsgf-qa", "to": "auto-remediation-loop", "label": "bounces on test failure" },
+    { "from": "auto-remediation-loop", "to": "tsgf-build", "label": "re-routes with failure diff" },
+    { "from": "tsgf-qa", "to": "visual-proof-engine", "label": "captures screenshot proofs" },
+    { "from": "tsgf-qa", "to": "pr-body", "label": "ticks AC & visual block" },
+    { "from": "tsgf-review", "to": "merge-gate", "label": "calls merge gate on approval" },
+    { "from": "tsgf-review", "to": "review-memory", "label": "queries & updates memory" },
+    { "from": "tsgf-review", "to": "code-review", "label": "conducts 2-axis review" },
+    { "from": "tsgf-review", "to": "needs-you", "label": "parks sensitive PRs (exit 7/8)" },
+    { "from": "merge-gate", "to": "base-branch", "label": "atomic squash-merge" },
+    { "from": "merge-gate", "to": "cleanup-wt", "label": "triggers post-merge cleanup" },
+    { "from": "merge-gate", "to": "guard-protected-push", "label": "guarded by" },
+    { "from": "ui-refine-loop", "to": "taste-file", "label": "reads design taste" },
+    { "from": "ui-refine-loop", "to": "v-critique", "label": "runs design critique" },
+    { "from": "ui-refine-loop", "to": "v-audit", "label": "runs technical audit" },
+    { "from": "ui-refine-loop", "to": "v-polish", "label": "runs micro-polish last" },
+    { "from": "visual", "to": "base-branch", "label": "extracts git diff facts" }
+  ],
+  "views": [
+    {
+      "id": "root",
+      "title": "TSGF Autonomous Software Factory Overview",
+      "caption": "Collect telemetry into Backlog; the Orchestrator drains Ready through Build → QA → Review; automated merge gate lands PRs onto the base branch.",
+      "nodeIds": ["tsgf-collect", "tsgf", "tsgf-build", "tsgf-qa", "tsgf-review", "merge-gate", "base-branch", "multi-host-engine", "auto-remediation-loop", "visual-proof-engine"]
+    },
+    {
+      "id": "tsgf-orchestrator",
+      "title": "Master Orchestrator (/tsgf)",
+      "caption": "The 5 orchestrator verbs coordinating board state, wave planning, project onboarding, and graceful termination.",
+      "nodeIds": ["tsgf", "tsgf-onboard", "tsgf-lint", "tsgf-status", "tsgf-run", "tsgf-stop", "gh-board", "tsgf-config"]
+    },
+    {
+      "id": "worker-lanes",
+      "title": "Worker Lanes (Build → QA → Review)",
+      "caption": "Isolated lane workers: minimal safe diffs under 400 lines, Acceptance Criteria runtime verification with screenshot proof, and adversarial review.",
+      "nodeIds": ["tsgf-build", "tsgf-qa", "tsgf-review", "auto-remediation-loop", "visual-proof-engine", "review-memory", "pr-body", "merge-gate"]
+    },
+    {
+      "id": "safety-guards",
+      "title": "Deterministic Safety & Guard Hooks",
+      "caption": "Python stdlib guards enforcing worktree containment, credential privacy, secret redaction, and branch protection.",
+      "nodeIds": ["guard-worktree-path", "guard-secrets", "guard-key-literals", "guard-delete-outside", "guard-protected-push", "cleanup-wt", "merge-gate"]
+    },
+    {
+      "id": "tsgf-exclusives",
+      "title": "TSGF Exclusive Innovations",
+      "caption": "Next-generation capabilities beyond traditional software factories: multi-host interoperability, closed-loop auto-remediation, visual proof sheets, and review memory.",
+      "nodeIds": ["multi-host-engine", "auto-remediation-loop", "visual-proof-engine", "review-memory", "gh-guard"]
+    }
+  ]
+}

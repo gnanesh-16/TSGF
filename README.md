@@ -12,7 +12,7 @@
 <img alt="Agents" src="https://img.shields.io/badge/agents-Claude%20%7C%20Codex%20%7C%20Antigravity-orange?style=flat-square">
 </p>
 
-<p><a href="#install">Install</a> · <a href="#quick-start">Quick Start</a> · <a href="#architecture">Architecture</a> · <a href="#skills">Skills</a> · <a href="#commands">Commands</a> · <a href="#guard-hooks">Guards</a></p>
+<p><a href="#install">Install</a> · <a href="#quick-start">Quick Start</a> · <a href="#architecture">Architecture</a> · <a href="diagrams/index.html">Live Simulator</a> · <a href="diagrams/skill-map/index.html">Interactive Skill Map ↗</a> · <a href="#skills">Skills</a> · <a href="#guard-hooks">Guards</a></p>
 
 </div>
 
@@ -112,24 +112,122 @@ All worker actions are guarded by deterministic Python hooks (`hooks/`) configur
 
 ---
 
-## Architecture: The 7-Column Kanban
+## Architecture
+
+> 🗺️ **Interactive Architecture Map**: Explore the interactive zoomable/pannable canvas at [`diagrams/skill-map/index.html`](diagrams/skill-map/index.html) or launch the [Live Simulator](diagrams/index.html).
+
+### End-to-End Autonomous Software Factory Flow
+
+```mermaid
+flowchart TD
+
+subgraph group_board["Board Orchestration"]
+  node_board_skill["/tsgf Orchestrator<br/>[skills/tsgf/README.md]"]
+  node_wave["tsgf-wave Workflow<br/>[workflows/tsgf-wave.js]"]
+  node_wave_plan["tsgf-wave-plan.py<br/>[scripts/tsgf-wave-plan.py]"]
+end
+
+subgraph group_lanes["Worker Lanes"]
+  node_build["tsgf-build (Lane 1)<br/>[skills/tsgf-build/README.md]"]
+  node_qa["tsgf-qa (Lane 2)<br/>[skills/tsgf-qa/README.md]"]
+  node_review["tsgf-review (Lane 3)<br/>[skills/tsgf-review/README.md]"]
+  node_remediation["Auto-Remediation Feedback<br/>[Closed Loop]"]
+end
+
+subgraph group_collect["Signal Collection"]
+  node_collect_skill["/tsgf-collect<br/>[skills/tsgf-collect/README.md]"]
+  node_sentry["Sentry Miner<br/>[collect_sentry.py]"]
+  node_posthog["PostHog Miner<br/>[collect_posthog.py]"]
+  node_custom["GitHub / PRs / Architecture<br/>[collect_custom.py]"]
+end
+
+subgraph group_project["Project Setup & Status"]
+  node_setup["/tsgf onboard<br/>[scripts/tsgf-setup.py]"]
+  node_settings["Project Settings<br/>[scripts/tsgf-settings.py]"]
+  node_status["Board Status<br/>[scripts/tsgf-status.py]"]
+end
+
+subgraph group_safety["Deterministic Safety & Merge"]
+  node_verifier["Test Verification<br/>[verify_commands]"]
+  node_approval["tsgf-merge-gate.sh<br/>[scripts/tsgf-merge-gate.sh]"]
+  node_worktree_guard["guard-worktree-path.py<br/>[.claude/worktrees/ sandbox]"]
+  node_push_guard["guard-protected-push.py<br/>[main/master protection]"]
+  node_secrets_guard["guard-secrets.py<br/>[.env & key redaction]"]
+  node_cleanup["cleanup-wt.py<br/>[auto-prune worktrees]"]
+end
+
+subgraph group_multihost["Multi-Host Runtime Engine"]
+  node_multihost["Unified .agents/ Tree<br/>[Claude Code · Antigravity · Codex · Cursor]"]
+end
+
+node_user(("Project Developer"))
+node_sentry_service{{"Sentry Telemetry"}}
+node_posthog_service{{"PostHog Events"}}
+node_github{{"GitHub Repository & Board"}}
+
+node_user -->|"runs /tsgf"| node_board_skill
+node_user -->|"runs /tsgf-collect"| node_collect_skill
+node_user -->|"onboards project"| node_setup
+
+node_board_skill -->|"plans wave"| node_wave_plan
+node_wave_plan -->|"launches"| node_wave
+node_wave -->|"dispatches"| node_build
+node_wave -->|"dispatches"| node_qa
+node_wave -->|"dispatches"| node_review
+
+node_build -->|"opens draft PR"| node_qa
+node_qa -->|"tests pass"| node_review
+node_qa -->|"tests fail"| node_remediation
+node_review -->|"changes requested"| node_remediation
+node_remediation -->|"structured diff fix"| node_build
+
+node_review -->|"passes review"| node_approval
+node_approval -->|"runs tests"| node_verifier
+node_approval -->|"checked by"| node_push_guard
+node_approval -->|"merges to base"| node_github
+node_approval -->|"triggers"| node_cleanup
+
+node_build -->|"confined by"| node_worktree_guard
+node_build -->|"protected by"| node_secrets_guard
+
+node_collect_skill -->|"mines"| node_sentry
+node_collect_skill -->|"mines"| node_posthog
+node_collect_skill -->|"mines"| node_custom
+node_sentry -->|"queries"| node_sentry_service
+node_posthog -->|"queries"| node_posthog_service
+node_collect_skill -->|"files to Backlog"| node_github
+
+node_setup -->|"configures"| node_settings
+node_setup -->|"wires"| node_multihost
+node_user -->|"checks state"| node_status
+```
+
+### The 7-Column Kanban Board
 
 ```
 [Backlog] ──► [Ready] ──► [Building] ──► [QA] ──► [Review] ──► [Done]
                             ▲             │         │
                             │             ▼         ▼
-                            └───────── [Bounce back] 
+                            └───────── [Auto-Remediation Bounce] 
                                           │
                                     [Blocked] ◄── Needs Human Attention
 ```
 
-- **Backlog**: Discovered ideas and issues.
-- **Ready**: High-priority tasks approved by human developer.
-- **Building**: Worker executes task in isolated branch worktree.
-- **QA**: Automatic verification against Acceptance Criteria + screenshot evidence.
-- **Review**: Adversarial review + historical check.
-- **Done**: Merged via `tsgf-merge-gate.sh`.
-- **Blocked**: Requires human clarification or manual intervention.
+- **Backlog**: Telemetry discoveries filed by `/tsgf-collect` or developers.
+- **Ready**: High-priority tasks approved by human developer, ready for autonomous dispatch.
+- **Building**: Worker executes task in an isolated branch worktree under `.claude/worktrees/` (`<400 lines`).
+- **QA**: Runtime verification against Acceptance Criteria + screenshot evidence.
+- **Review**: Adversarial review + historical regression memory check.
+- **Done**: Verified squash-merge landing on base branch via `tsgf-merge-gate.sh`.
+- **Blocked**: Parked cards requiring human action (auth, money, destructive DB changes, or scope splits).
+
+### TSGF Exclusive Innovations
+
+1. **Multi-Host Interoperability**: Seamlessly operates across **Google Antigravity**, **Claude Code**, **OpenAI Codex**, and **Cursor** using the unified `.agents/` single source of truth.
+2. **Closed-Loop Auto-Remediation**: Failing QA tests or requested review changes bounce back to the Building lane with structured failure context, creating an autonomous self-healing loop.
+3. **Visual Proof Engine**: Automated headless browser screenshot capture with Before/After visual comparison sheets in every pull request.
+4. **Adversarial Review Memory Ledger**: Persistent store of past review findings at `.claude/tsgf/review-memory.json` preventing recurring architectural regressions.
+5. **Token-Bucket Rate Guard**: Prevents GitHub API quota exhaustion during continuous autonomous runs via `tsgf-gh-guard.sh`.
 
 ---
 

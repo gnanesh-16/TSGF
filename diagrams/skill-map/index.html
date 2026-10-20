@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSGF — Interactive Skill Map &amp; Architecture Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #090d16;
+  --surface: #111726;
+  --surface-alt: #182033;
+  --border: #222d42;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --purple: #8b5cf6;
+  --cyan: #06b6d4;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.15);
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --purple: #7c3aed;
+  --cyan: #0891b2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+  flex-shrink: 0;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.back-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+.back-link:hover { color: var(--accent); }
+.header-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+.pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.view-select {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+.view-select:focus { border-color: var(--accent); }
+.search-input {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--accent); }
+.btn {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Filter Tabs */
+.filter-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 20px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  align-items: center;
+}
+.tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  background: var(--surface-alt);
+  color: var(--accent);
+  border-color: var(--border);
+}
+.filter-count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+/* Canvas Area */
+.canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+  cursor: grab;
+}
+.canvas-container.grabbing { cursor: grabbing; }
+
+.canvas-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  width: 2600px;
+  height: 1600px;
+  padding: 40px;
+}
+
+/* SVG Edges */
+.edges-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.edge-path {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  transition: stroke 0.3s, stroke-width 0.3s;
+}
+.edge-path.active {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+.edge-path.highlight-in {
+  stroke: var(--success);
+  stroke-width: 2.5;
+}
+.edge-path.highlight-out {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+/* Node Cards */
+.node-card {
+  position: absolute;
+  width: 250px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  user-select: none;
+}
+.node-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px var(--accent-glow);
+  z-index: 5;
+}
+.node-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+  z-index: 10;
+}
+.node-card.dimmed { opacity: 0.15; pointer-events: none; }
+
+.node-kind {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.node-kind.public { color: var(--accent); }
+.node-kind.lane { color: var(--warning); }
+.node-kind.hook { color: var(--danger); }
+.node-kind.advanced { color: var(--purple); }
+.node-kind.board { color: var(--cyan); }
+.node-kind.script { color: var(--success); }
+
+.node-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.node-sublabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* Column Header Markers */
+.col-label-header {
+  position: absolute;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  width: 250px;
+  pointer-events: none;
+}
+
+/* Drawer */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -500px;
+  width: min(480px, 92vw);
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  z-index: 100;
+  padding: 28px;
+  overflow-y: auto;
+  transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.drawer.open { right: 0; }
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.drawer-close {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.drawer-close:hover { border-color: var(--accent); color: var(--accent); }
+.drawer-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+.drawer-sec {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.drawer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.drawer-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.drawer-cmd {
+  font-family: var(--font-mono);
+  background: var(--surface-alt);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--accent);
+  display: block;
+  overflow-x: auto;
+}
+.link-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.link-pill {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+}
+.link-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* HUD Zoom controls */
+.hud-zoom {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 30;
+}
+.hud-btn {
+  background: var(--surface-alt);
+  border: 0;
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+.hud-btn:hover { background: var(--accent); color: #fff; }
+
+/* Status pill indicator */
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.badge-dot.public { background: var(--accent); }
+.badge-dot.lane { background: var(--warning); }
+.badge-dot.hook { background: var(--danger); }
+.badge-dot.advanced { background: var(--purple); }
+.badge-dot.board { background: var(--cyan); }
+.badge-dot.script { background: var(--success); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← TSGF Home</a>
+    <h1 class="header-title">
+      <span>TSGF Skill Map</span>
+      <span class="pill">Interactive Canvas</span>
+    </h1>
+  </div>
+  <div class="toolbar">
+    <select id="view-select" class="view-select" aria-label="Select Architecture View">
+      <option value="root">🌐 Master Factory View</option>
+      <option value="tsgf-orchestrator">⚡ Master Orchestrator (/tsgf)</option>
+      <option value="worker-lanes">🔨 Worker Lanes (Build → QA → Review)</option>
+      <option value="safety-guards">🛡️ Safety &amp; Guard Hooks</option>
+      <option value="tsgf-exclusives">🚀 TSGF Exclusive Innovations</option>
+    </select>
+    <input type="search" id="search-input" class="search-input" placeholder="Search skills, hooks, tools..." autocomplete="off">
+    <button class="btn" id="btn-fit">Fit Canvas</button>
+    <button class="btn" id="theme-btn">🌓</button>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <button class="tab-btn active" data-filter="all">All Components <span class="filter-count" id="count-all">0</span></button>
+  <button class="tab-btn" data-filter="public">Orchestrator (/tsgf) <span class="filter-count" id="count-public">0</span></button>
+  <button class="tab-btn" data-filter="lane">Worker Lanes <span class="filter-count" id="count-lane">0</span></button>
+  <button class="tab-btn" data-filter="hook">Safety Guards <span class="filter-count" id="count-hook">0</span></button>
+  <button class="tab-btn" data-filter="board">Board States <span class="filter-count" id="count-board">0</span></button>
+  <button class="tab-btn" data-filter="advanced">TSGF Exclusives <span class="filter-count" id="count-advanced">0</span></button>
+</div>
+
+<main class="canvas-container" id="canvas-container">
+  <div class="canvas-viewport" id="viewport">
+    <svg class="edges-svg" id="edges-svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--border)" id="arrow-path"></path>
+        </marker>
+        <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+    </svg>
+    <div id="col-headers"></div>
+    <div id="nodes-layer"></div>
+  </div>
+
+  <div class="hud-zoom">
+    <button class="hud-btn" id="zoom-in" title="Zoom in">+</button>
+    <button class="hud-btn" id="zoom-out" title="Zoom out">−</button>
+    <button class="hud-btn" id="zoom-reset" title="Reset Zoom">1:1</button>
+  </div>
+</main>
+
+<!-- Details Drawer -->
+<aside class="drawer" id="drawer" aria-label="Component Details">
+  <div class="drawer-header">
+    <div>
+      <span class="node-kind" id="d-kind"><span class="badge-dot public"></span> ORCHESTRATOR</span>
+      <h2 class="drawer-title" id="d-title">/tsgf</h2>
+    </div>
+    <button class="drawer-close" id="drawer-close">✕</button>
+  </div>
+
+  <div class="drawer-sec">
+    <div class="drawer-label">What It Does</div>
+    <p class="drawer-text" id="d-what"></p>
+  </div>
+
+  <div class="drawer-sec">
+    <div class="drawer-label">When to Run</div>
+    <p class="drawer-text" id="d-when"></p>
+  </div>
+
+  <div class="drawer-sec">
+    <div class="drawer-label">Execution Mechanism</div>
+    <p class="drawer-text" id="d-how"></p>
+  </div>
+
+  <div class="drawer-sec" id="d-verbs-sec">
+    <div class="drawer-label">Command Line / Verbs</div>
+    <code class="drawer-cmd" id="d-verbs"></code>
+  </div>
+
+  <div class="drawer-sec" id="d-deps-sec">
+    <div class="drawer-label">Inbound Connections (Triggers / Constraints)</div>
+    <div class="link-pill-group" id="d-inbound"></div>
+  </div>
+
+  <div class="drawer-sec" id="d-out-sec">
+    <div class="drawer-label">Outbound Dispatches (Delegates To / Affects)</div>
+    <div class="link-pill-group" id="d-outbound"></div>
+  </div>
+</aside>
+
+<script>
+// TSGF Software Factory Complete Data Model
+const DATA = {
+  columns: [
+    { title: "Signal Collection", x: 60 },
+    { title: "Master Orchestration", x: 420 },
+    { title: "Lane 1: Building", x: 780 },
+    { title: "Lane 2: QA Verification", x: 1140 },
+    { title: "Lane 3: Review & Merge", x: 1500 },
+    { title: "Multi-Host & Helpers", x: 1860 }
+  ],
+  nodes: [
+    // Signal Collection (Col 0)
+    { id: "tsgf-collect", label: "/tsgf-collect", kind: "public", col: 0, x: 60, y: 120, what: "Proactively discovers bugs and tech debt from Sentry, PostHog, GitHub issues, and merged PRs, filing verified tickets to Backlog.", when: "Whenever mining telemetry signals or auditing project architecture.", how: "Runs collectors, passes candidates to isolated verifier sub-agents, deduplicates fingerprints, and formats cards into TSGF writing standard.", verbs: "sentry · posthog · issues · prs · architecture" },
+    { id: "gh-board", label: "GitHub Project Board", kind: "board", col: 0, x: 60, y: 320, what: "The persistent Kanban board state: Backlog · Ready · Building · QA · Review · Blocked · Done with routing labels.", when: "The single source of truth drained by the factory.", how: "Items updated via gh project API and synchronized with local git branch states.", verbs: "7-column board state" },
+    { id: "tsgf-config", label: "tsgf config.json", kind: "board", col: 0, x: 60, y: 480, what: "Per-project configuration file storing verification commands, model tiers, base branch, and merge policies.", when: "Written at onboard; read at wave launch.", how: "Stored at .claude/tsgf/config.json with active project pointer.", verbs: "Configuration" },
+
+    // Master Orchestration (Col 1)
+    { id: "tsgf", label: "/tsgf", kind: "public", col: 1, x: 420, y: 120, what: "The master orchestrator: 5 verbs (onboard, lint, status, run, stop) coordinating the 7-column Kanban board from empty to drained.", when: "Whenever you run /tsgf, launch a wave, or check project readiness.", how: "Coordinates waves and dispatches workers. Never implements product code in orchestrator session.", verbs: "onboard · lint · status · run · stop" },
+    { id: "tsgf-run", label: "/tsgf run", kind: "public", col: 1, x: 420, y: 280, what: "The autonomous wave loop: plans task waves, claims assignees, dispatches workers, and merges green PRs until the board is drained.", when: "When you want TSGF to autonomously drain the Ready column into merged PRs.", how: "Executes preflight checks, resolves dependencies with tsgf-wave-plan.py, spawns tsgf-build, tsgf-qa, and tsgf-review, then triggers tsgf-merge-gate.sh.", verbs: "/tsgf run [slug] [--low|--high]" },
+    { id: "wave-plan", label: "tsgf-wave-plan.py", kind: "script", col: 1, x: 420, y: 440, what: "Wave DAG planner resolving 'Blocked by' edges and prioritizing bugs over features.", when: "Run at the beginning of each wave iteration.", how: "Builds dependency graph and generates parallel worker batches capped by concurrency limits.", verbs: "DAG dependency solver" },
+    { id: "tsgf-onboard", label: "/tsgf onboard", kind: "public", col: 1, x: 420, y: 580, what: "8-step setup wizard that inspects system tools, links GitHub projects, configures guard hooks, and sets up verify commands.", when: "First-time project setup, after upgrading, or to self-repair missing skills.", how: "Runs tsgf-setup.py, audits environment with tsgf-env-check.sh, and writes settings to .claude/settings.json and AGENTS.md.", verbs: "/tsgf onboard" },
+    { id: "tsgf-lint", label: "/tsgf lint", kind: "public", col: 1, x: 420, y: 720, what: "Audits Ready cards to verify parseable acceptance criteria, clear problem scopes, and explicit blockers before execution.", when: "Before starting a run, especially after /tsgf-collect filed new backlog tasks.", how: "Validates AC checklist syntax, checks size caps (<400 lines), and flags ambiguous requirements.", verbs: "/tsgf lint" },
+    { id: "tsgf-status", label: "/tsgf status", kind: "public", col: 1, x: 420, y: 860, what: "Read-only snapshot of all 7 Kanban columns, active card counts, and in-flight workers.", when: "To inspect active work without modifying board state.", how: "Runs tsgf-status.py to read GitHub Project items or local board state.", verbs: "/tsgf status [--json]" },
+    { id: "tsgf-stop", label: "/tsgf stop", kind: "public", col: 1, x: 420, y: 1000, what: "Graceful shutdown: terminates active worker processes cleanly, posts checkpoint comments, and releases inflight locks.", when: "To pause or stop an autonomous wave loop immediately.", how: "Executes tsgf-stop.sh, signals worker PIDs, and clears .claude/tsgf/inflight/ locks.", verbs: "/tsgf stop" },
+
+    // Lane 1: Building (Col 2)
+    { id: "tsgf-build", label: "tsgf-build", kind: "lane", col: 2, x: 780, y: 120, what: "Lane 1 Builder: takes a Ready card into an isolated git worktree, writes minimal safe diff, runs local tests, and files a draft PR.", when: "Triggered by the wave loop for Ready cards with bug/feature labels.", how: "Creates .claude/worktrees/<id>, enforces <400 line diff cap, initializes PR body via tsgf-pr-body.sh, and moves card to QA.", verbs: "Lane 1: Building worker" },
+    { id: "guard-worktree-path", label: "guard-worktree-path", kind: "hook", col: 2, x: 780, y: 280, what: "Restricts `git worktree add` commands strictly to `.claude/worktrees/` or `.agents/worktrees/`.", when: "PreToolUse on every shell command.", how: "Parses git worktree targets and halts execution with exit 1 if escaping approved folders.", verbs: "PreToolUse Bash Guard" },
+    { id: "guard-secrets", label: "guard-secrets", kind: "hook", col: 2, x: 780, y: 420, what: "Blocks commands attempting to read, cat, dump, or pipe .env files, private SSH keys, or cloud credentials.", when: "PreToolUse on shell, read, and grep operations.", how: "Pattern matches target file paths against credential formats and blocks unauthorized reads.", verbs: "PreToolUse Secrets Guard" },
+    { id: "guard-key-literals", label: "guard-key-literals", kind: "hook", col: 2, x: 780, y: 560, what: "Scans code writes and edits for live high-entropy API keys (OpenAI, Anthropic, GitHub, AWS, Stripe) and blocks commits.", when: "PreToolUse on file write and edit operations.", how: "Regex and entropy analysis detects live tokens and blocks unredacted secrets.", verbs: "Pre/PostToolUse Key Guard" },
+    { id: "guard-delete-outside", label: "guard-delete-outside", kind: "hook", col: 2, x: 780, y: 700, what: "Halts destructive `rm -rf`, `find -delete`, or `git clean` targeting outside the repository or targeting `/` and `~`.", when: "PreToolUse on shell commands.", how: "Resolves target paths and validates that they reside strictly within the project boundary.", verbs: "PreToolUse Delete Guard" },
+    { id: "tdd", label: "tdd discipline", kind: "script", col: 2, x: 780, y: 840, what: "Test-Driven Development discipline: red-first tests at public seams before implementation.", when: "Used by tsgf-build on non-docs tickets.", how: "Enforces red-before-green vertical slices with zero implementation coupling.", verbs: "Red-Green-Refactor" },
+
+    // Lane 2: QA Verification (Col 3)
+    { id: "tsgf-qa", label: "tsgf-qa", kind: "lane", col: 3, x: 1140, y: 120, what: "Lane 2 Tester: proves Acceptance Criteria with running tests, screenshots, and test-gap analysis. Passes to Review or bounces to Build.", when: "Triggered for cards in QA or Ready cards with the 'qa' label (which skip Building).", how: "Executes verify_commands, captures headless browser proofs, checks for uncovered diff paths, and records evidence in PR visual block.", verbs: "Lane 2: QA worker" },
+    { id: "visual-proof-engine", label: "Visual Proof Engine", kind: "advanced", col: 3, x: 1140, y: 280, what: "Automated headless browser screenshot capture and visual regression comparison sheets in every PR.", when: "During Lane 2 (tsgf-qa) execution.", how: "Executes headless browser checks, capturing full-page and crop screenshots pinned to the commit hash.", verbs: "Headless Screenshots & Sheets" },
+    { id: "auto-remediation-loop", label: "Auto-Remediation", kind: "advanced", col: 3, x: 1140, y: 440, what: "Self-healing feedback loops between QA, Review, and Building lanes.", when: "When QA tests fail or Review flags architectural debt.", how: "Bounces the card back to Building with structured, diff-level failure context, creating an autonomous test-fix-recheck cycle.", verbs: "Closed-loop feedback" },
+    { id: "pr-body", label: "tsgf-pr-body.sh", kind: "script", col: 3, x: 1140, y: 600, what: "Surgically updates individual PR marker blocks: status, problem, solution, ac, visual, history, risk.", when: "Used by every lane to record status without overwriting other lanes.", how: "Replaces content between explicit comment markers with atomic file replacement.", verbs: "PR marker block manager" },
+
+    // Lane 3: Review & Merge (Col 4)
+    { id: "tsgf-review", label: "tsgf-review", kind: "lane", col: 4, x: 1500, y: 120, what: "Lane 3 Reviewer: generates adversarial hypotheses, checks historical review memory, verifies merge policies, and executes merge gate.", when: "Triggered for cards in Review that passed QA.", how: "Performs adversarial code audit, checks .claude/tsgf/review-memory.json, runs tsgf-merge-policy.py, and triggers tsgf-merge-gate.sh.", verbs: "Lane 3: Review worker" },
+    { id: "review-memory", label: "Review Memory Ledger", kind: "board", col: 4, x: 1500, y: 280, what: "Persistent store of historical review findings, rejected patterns, and project conventions preventing recurring mistakes.", when: "Queried on every Review pass and updated after PR audits.", how: "Stored at .claude/tsgf/review-memory.json.", verbs: "Persistent Memory" },
+    { id: "merge-gate", label: "tsgf-merge-gate.sh", kind: "script", col: 4, x: 1500, y: 440, what: "Atomic programmatic gate to the base branch: locks repo, re-proves test suites, and squash-merges.", when: "Called by tsgf-review once all review hypotheses pass.", how: "Takes atomic lock, runs project verification commands, validates base HEAD, and squash-merges with matching commit SHA.", verbs: "Atomic Merge Gate" },
+    { id: "guard-protected-push", label: "guard-protected-push", kind: "hook", col: 4, x: 1500, y: 600, what: "Enforces branch protection locally by blocking direct or force pushes to main, master, or production.", when: "PreToolUse on git push commands.", how: "Checks destination branch name and force flags, requiring PRs for all mainline changes.", verbs: "PreToolUse Push Guard" },
+    { id: "cleanup-wt", label: "cleanup-wt", kind: "hook", col: 4, x: 1500, y: 740, what: "Automatically removes merged git worktrees and branches post-merge, logging actions to recovery.json.", when: "PostToolUse and post-merge lifecycle events.", how: "Prunes worktrees whose branches are merged into HEAD, maintaining an audit trail.", verbs: "Worktree Pruner" },
+    { id: "base-branch", label: "Base Branch (main)", kind: "board", col: 4, x: 1500, y: 880, what: "The repo's target base branch. Cards reach Done only when their squash-merge commit lands here.", when: "Destination of all verified worker PRs.", how: "Updated exclusively via tsgf-merge-gate.sh.", verbs: "Production Target" },
+    { id: "needs-you", label: "Blocked · 🙋 Needs You", kind: "board", col: 4, x: 1500, y: 1020, what: "Human checkpoint gate for sensitive actions: payments, auth, destructive schema, or >400 line PRs.", when: "Merge gate exits 7 (policy check) or 8 (human migration step).", how: "Posts an explicit command checklist; resumes wave on 'done' comment.", verbs: "Human-in-the-loop" },
+
+    // Multi-Host & Helpers (Col 5)
+    { id: "multi-host-engine", label: "Multi-Host Engine", kind: "advanced", col: 5, x: 1860, y: 120, what: "Native interoperability across Antigravity IDE, Claude Code, OpenAI Codex, and Cursor via shared .agents/ infrastructure.", when: "Dispatches across any supported agent runtime without configuration lock-in.", how: "Stores skills, scripts, and workflows in .agents/ and symlinks dynamically into host directories (.claude/, .codex/).", verbs: "Antigravity · Claude · Codex · Cursor" },
+    { id: "gh-guard", label: "tsgf-gh-guard.sh", kind: "script", col: 5, x: 1860, y: 280, what: "Token-bucket rate guard checking GitHub CLI rate limit remaining before API operations to prevent throttling.", when: "Called before wave status, card filing, and project item updates.", how: "Checks rate limit bucket and enforces backoff if remaining calls drop below threshold.", verbs: "Rate limit token bucket" },
+    { id: "ui-refine-loop", label: "/ui-refine-loop", kind: "public", col: 5, x: 1860, y: 440, what: "Critique-then-fix visual refinement loop that polishes individual frontend pages or UI components to state-of-the-art standards.", when: "When polishing user interfaces, fixing styling regressions, or elevating visual aesthetics.", how: "Runs iterative critique passes on typography, color contrast, and spacing, capturing Before/After screenshots in a draft PR.", verbs: "/ui-refine-loop <route>" },
+    { id: "visual", label: "/visual", kind: "public", col: 5, x: 1860, y: 600, what: "Generates a standalone single-page HTML report containing interactive architecture diagrams, branch recaps, or plan dependency graphs.", when: "When you need a visual summary of branch changes, planned waves, or codebase dependencies.", how: "Collects git data, renders into an interactive canvas template with dark/light themes.", verbs: "/visual recap" },
+    { id: "tsgf-sync", label: "/tsgf-sync", kind: "public", col: 5, x: 1860, y: 740, what: "Safe git synchronization helper creating atomic commits per logical change, rebase-pulling, and non-force pushing.", when: "At the end of a feature change to push clean, atomic commits without force-push risks.", how: "Stages logical paths, enforces semantic commit messages, checks branch protection, and pulls upstream cleanly.", verbs: "/tsgf-sync" }
+  ],
+  edges: [
+    { from: "tsgf-collect", to: "gh-board" },
+    { from: "tsgf", to: "gh-board" },
+    { from: "tsgf", to: "tsgf-run" },
+    { from: "tsgf", to: "tsgf-onboard" },
+    { from: "tsgf", to: "tsgf-lint" },
+    { from: "tsgf", to: "tsgf-status" },
+    { from: "tsgf", to: "tsgf-stop" },
+    { from: "tsgf-run", to: "wave-plan" },
+    { from: "wave-plan", to: "tsgf-build" },
+    { from: "tsgf-run", to: "gh-guard" },
+    { from: "tsgf-run", to: "multi-host-engine" },
+    { from: "tsgf-build", to: "guard-worktree-path" },
+    { from: "tsgf-build", to: "guard-secrets" },
+    { from: "tsgf-build", to: "guard-key-literals" },
+    { from: "tsgf-build", to: "guard-delete-outside" },
+    { from: "tsgf-build", to: "tdd" },
+    { from: "tsgf-build", to: "tsgf-qa" },
+    { from: "tsgf-qa", to: "visual-proof-engine" },
+    { from: "tsgf-qa", to: "pr-body" },
+    { from: "tsgf-qa", to: "tsgf-review" },
+    { from: "tsgf-qa", to: "auto-remediation-loop" },
+    { from: "auto-remediation-loop", to: "tsgf-build" },
+    { from: "tsgf-review", to: "review-memory" },
+    { from: "tsgf-review", to: "merge-gate" },
+    { from: "tsgf-review", to: "needs-you" },
+    { from: "merge-gate", to: "guard-protected-push" },
+    { from: "merge-gate", to: "cleanup-wt" },
+    { from: "merge-gate", to: "base-branch" }
+  ],
+  views: {
+    "root": ["tsgf-collect", "gh-board", "tsgf", "tsgf-run", "tsgf-build", "tsgf-qa", "tsgf-review", "merge-gate", "base-branch", "multi-host-engine", "auto-remediation-loop", "visual-proof-engine"],
+    "tsgf-orchestrator": ["tsgf", "tsgf-run", "tsgf-onboard", "tsgf-lint", "tsgf-status", "tsgf-stop", "gh-board", "tsgf-config", "wave-plan"],
+    "worker-lanes": ["tsgf-build", "tsgf-qa", "tsgf-review", "auto-remediation-loop", "visual-proof-engine", "review-memory", "pr-body", "merge-gate"],
+    "safety-guards": ["guard-worktree-path", "guard-secrets", "guard-key-literals", "guard-delete-outside", "guard-protected-push", "cleanup-wt", "merge-gate"],
+    "tsgf-exclusives": ["multi-host-engine", "auto-remediation-loop", "visual-proof-engine", "review-memory", "gh-guard"]
+  }
+};
+
+// Canvas State
+let scale = 0.8;
+let panX = 40;
+let panY = 40;
+let isDragging = false;
+let startX, startY;
+let activeFilter = 'all';
+let activeView = 'root';
+let selectedNodeId = null;
+
+const container = document.getElementById('canvas-container');
+const viewport = document.getElementById('viewport');
+const edgesSvg = document.getElementById('edges-svg');
+const nodesLayer = document.getElementById('nodes-layer');
+const colHeaders = document.getElementById('col-headers');
+
+function updateFilterCounts() {
+  document.getElementById('count-all').textContent = DATA.nodes.length;
+  document.getElementById('count-public').textContent = DATA.nodes.filter(n => n.kind === 'public').length;
+  document.getElementById('count-lane').textContent = DATA.nodes.filter(n => n.kind === 'lane').length;
+  document.getElementById('count-hook').textContent = DATA.nodes.filter(n => n.kind === 'hook').length;
+  document.getElementById('count-board').textContent = DATA.nodes.filter(n => n.kind === 'board').length;
+  document.getElementById('count-advanced').textContent = DATA.nodes.filter(n => n.kind === 'advanced').length;
+}
+
+function applyTransform() {
+  viewport.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+}
+
+function renderHeaders() {
+  colHeaders.innerHTML = '';
+  DATA.columns.forEach(col => {
+    const el = document.createElement('div');
+    el.className = 'col-label-header';
+    el.style.left = `${col.x}px`;
+    el.style.top = '50px';
+    el.textContent = col.title;
+    colHeaders.appendChild(el);
+  });
+}
+
+function renderNodes() {
+  nodesLayer.innerHTML = '';
+  DATA.nodes.forEach(node => {
+    const el = document.createElement('div');
+    el.className = `node-card ${node.kind}`;
+    el.id = `node-${node.id}`;
+    el.style.left = `${node.x}px`;
+    el.style.top = `${node.y}px`;
+    el.innerHTML = `
+      <div class="node-kind ${node.kind}">
+        <span class="badge-dot ${node.kind}"></span> ${node.kind}
+      </div>
+      <div class="node-title">${node.label}</div>
+      <div class="node-sublabel">${node.what.slice(0, 68)}...</div>
+    `;
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectNode(node);
+    });
+    nodesLayer.appendChild(el);
+  });
+}
+
+function renderEdges() {
+  edgesSvg.querySelectorAll('path:not(#arrow-path)').forEach(p => p.remove());
+  DATA.edges.forEach(edge => {
+    const from = DATA.nodes.find(n => n.id === edge.from);
+    const to = DATA.nodes.find(n => n.id === edge.to);
+    if (!from || !to) return;
+
+    const x1 = from.x + 250;
+    const y1 = from.y + 40;
+    const x2 = to.x;
+    const y2 = to.y + 40;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const cx1 = x1 + Math.max(40, dx * 0.5);
+    const cy1 = y1;
+    const cx2 = x2 - Math.max(40, dx * 0.5);
+    const cy2 = y2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+    path.setAttribute('class', 'edge-path');
+    path.setAttribute('marker-end', 'url(#arrow)');
+    path.id = `edge-${from.id}-${to.id}`;
+    edgesSvg.appendChild(path);
+  });
+}
+
+function applyVisibility() {
+  const allowedNodeIds = activeView === 'root' ? null : new Set(DATA.views[activeView]);
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+
+  DATA.nodes.forEach(node => {
+    const el = document.getElementById(`node-${node.id}`);
+    if (!el) return;
+
+    let match = true;
+    if (activeFilter !== 'all' && node.kind !== activeFilter) match = false;
+    if (allowedNodeIds && !allowedNodeIds.has(node.id)) match = false;
+    if (query && !node.label.toLowerCase().includes(query) && !node.what.toLowerCase().includes(query)) match = false;
+
+    el.classList.toggle('dimmed', !match);
+  });
+
+  // Dim edges whose endpoints are dimmed
+  DATA.edges.forEach(edge => {
+    const path = document.getElementById(`edge-${edge.from}-${edge.to}`);
+    if (!path) return;
+    const fromEl = document.getElementById(`node-${edge.from}`);
+    const toEl = document.getElementById(`node-${edge.to}`);
+    const dimmed = fromEl.classList.contains('dimmed') || toEl.classList.contains('dimmed');
+    path.style.opacity = dimmed ? '0.1' : '0.7';
+  });
+}
+
+function selectNode(node) {
+  selectedNodeId = node.id;
+  document.querySelectorAll('.node-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`node-${node.id}`)?.classList.add('selected');
+
+  // Highlight connecting edges
+  document.querySelectorAll('.edge-path').forEach(p => {
+    p.classList.remove('active', 'highlight-in', 'highlight-out');
+  });
+
+  const inEdges = DATA.edges.filter(e => e.to === node.id);
+  const outEdges = DATA.edges.filter(e => e.from === node.id);
+
+  inEdges.forEach(e => {
+    const p = document.getElementById(`edge-${e.from}-${e.to}`);
+    if (p) p.classList.add('highlight-in');
+  });
+  outEdges.forEach(e => {
+    const p = document.getElementById(`edge-${e.from}-${e.to}`);
+    if (p) p.classList.add('highlight-out');
+  });
+
+  // Populate drawer
+  const dKind = document.getElementById('d-kind');
+  dKind.className = `node-kind ${node.kind}`;
+  dKind.innerHTML = `<span class="badge-dot ${node.kind}"></span> ${node.kind.toUpperCase()}`;
+  document.getElementById('d-title').textContent = node.label;
+  document.getElementById('d-what').textContent = node.what;
+  document.getElementById('d-when').textContent = node.when;
+  document.getElementById('d-how').textContent = node.how;
+  document.getElementById('d-verbs').textContent = node.verbs || "Standard";
+
+  const inContainer = document.getElementById('d-inbound');
+  inContainer.innerHTML = '';
+  if (inEdges.length === 0) {
+    inContainer.innerHTML = '<span style="font-size:0.8rem;color:var(--text-muted)">None (Entry point)</span>';
+  } else {
+    inEdges.forEach(e => {
+      const src = DATA.nodes.find(n => n.id === e.from);
+      if (!src) return;
+      const pill = document.createElement('span');
+      pill.className = 'link-pill';
+      pill.textContent = `← ${src.label}`;
+      pill.onclick = () => selectNode(src);
+      inContainer.appendChild(pill);
+    });
+  }
+
+  const outContainer = document.getElementById('d-outbound');
+  outContainer.innerHTML = '';
+  if (outEdges.length === 0) {
+    outContainer.innerHTML = '<span style="font-size:0.8rem;color:var(--text-muted)">None (Terminal point)</span>';
+  } else {
+    outEdges.forEach(e => {
+      const tgt = DATA.nodes.find(n => n.id === e.to);
+      if (!tgt) return;
+      const pill = document.createElement('span');
+      pill.className = 'link-pill';
+      pill.textContent = `→ ${tgt.label}`;
+      pill.onclick = () => selectNode(tgt);
+      outContainer.appendChild(pill);
+    });
+  }
+
+  document.getElementById('drawer').classList.add('open');
+}
+
+// Pan & Drag Handlers
+container.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.node-card')) return;
+  isDragging = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  container.classList.add('grabbing');
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyTransform();
+});
+
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  container.classList.remove('grabbing');
+});
+
+container.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+  scale = Math.min(Math.max(0.35, scale * zoomFactor), 2.2);
+  applyTransform();
+}, { passive: false });
+
+// Zoom HUD Handlers
+document.getElementById('zoom-in').onclick = () => { scale = Math.min(2.2, scale * 1.2); applyTransform(); };
+document.getElementById('zoom-out').onclick = () => { scale = Math.max(0.35, scale / 1.2); applyTransform(); };
+document.getElementById('zoom-reset').onclick = () => { scale = 1.0; applyTransform(); };
+document.getElementById('btn-fit').onclick = () => { scale = 0.72; panX = 30; panY = 20; applyTransform(); };
+
+// Drawer Close
+document.getElementById('drawer-close').onclick = () => {
+  document.getElementById('drawer').classList.remove('open');
+  document.querySelectorAll('.node-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.edge-path').forEach(p => p.classList.remove('active', 'highlight-in', 'highlight-out'));
+};
+
+// Filter Bar Handlers
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyVisibility();
+  });
+});
+
+// View Select Handler
+document.getElementById('view-select').addEventListener('change', (e) => {
+  activeView = e.target.value;
+  applyVisibility();
+});
+
+// Search Input
+document.getElementById('search-input').addEventListener('input', () => {
+  applyVisibility();
+});
+
+// Theme Switcher
+document.getElementById('theme-btn').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+};
+
+// Init Canvas
+renderHeaders();
+renderNodes();
+renderEdges();
+updateFilterCounts();
+applyTransform();
+</script>
+</body>
+</html>

@@ -415,6 +415,57 @@ body {
 }
 .pill-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
 
+/* Architecture Section */
+.arch-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+}
+.arch-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.arch-diagram-wrapper {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px 16px;
+  overflow-x: auto;
+  text-align: center;
+}
+.arch-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.arch-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+.arch-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.arch-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 /* Footer */
 .footer {
   border-top: 1px solid var(--border);
@@ -438,8 +489,10 @@ body {
     </a>
     <div class="nav-links">
       <a href="#simulator" class="nav-link">Live Board</a>
+      <a href="#architecture" class="nav-link">Architecture</a>
       <a href="#skills" class="nav-link">Skills</a>
       <a href="#guards" class="nav-link">Guard Hooks</a>
+      <a href="skill-map/index.html" class="nav-link" style="color:var(--accent);font-weight:700;">Skill Map Canvas ↗</a>
       <a href="https://github.com/gnanesh-16/TSGF" target="_blank" rel="noopener" class="nav-link">GitHub ↗</a>
       <button class="theme-toggle" id="theme-btn" type="button" aria-label="Toggle theme">
         <span>🌓</span> Theme
@@ -456,6 +509,15 @@ body {
   <div class="cmd-box">
     <code id="cmd-install">curl -fsSL https://raw.githubusercontent.com/gnanesh-16/TSGF/main/get.sh | bash</code>
     <button class="copy-btn" id="copy-btn" type="button">Copy</button>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:12px;margin-top:-16px;margin-bottom:32px;">
+    <a href="skill-map/index.html" style="background:var(--accent);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);text-decoration:none;font-weight:700;font-size:0.9rem;box-shadow:0 4px 14px var(--accent-glow);display:inline-flex;align-items:center;gap:8px;">
+      <span>🗺️ Explore Skill Map Canvas</span> <span>↗</span>
+    </a>
+    <a href="#architecture" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:var(--radius-sm);text-decoration:none;font-weight:600;font-size:0.9rem;display:inline-flex;align-items:center;gap:6px;">
+      <span>📐 View Architecture</span>
+    </a>
   </div>
 </header>
 
@@ -527,6 +589,137 @@ body {
         <div class="column" id="col-blocked">
           <div class="col-header"><span>🙋 Blocked</span><small>0</small></div>
           <div class="col-cards"></div>
+        </div>
+      </div>
+    </div>
+  <!-- Factory Architecture Section -->
+  <section class="section" id="architecture">
+    <div class="section-header">
+      <h2 class="section-title">TSGF Factory Architecture</h2>
+      <p class="section-sub">Autonomous AI software factory lifecycle: Signal Collection → Board Orchestration → Isolated Lanes → Deterministic Safety → Verified PR Merge.</p>
+    </div>
+
+    <div class="arch-container">
+      <div class="arch-header-bar">
+        <div>
+          <span style="font-family:var(--font-mono);font-size:0.75rem;font-weight:700;color:var(--accent);">INTERACTIVE ARCHITECTURE TOPOLOGY</span>
+          <h3 style="font-size:1.15rem;font-weight:700;margin-top:2px;">Complete Component Flow &amp; Safety Guard Matrix</h3>
+        </div>
+        <a href="skill-map/index.html" class="btn" style="background:var(--accent);color:#fff;border-color:var(--accent);display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+          <span>🗺️ Open Fullscreen Skill Map</span> <span>↗</span>
+        </a>
+      </div>
+
+      <div class="arch-diagram-wrapper">
+        <div class="mermaid">
+flowchart TD
+
+subgraph group_board["Board Orchestration"]
+  node_board_skill["/tsgf Orchestrator<br/>[skills/tsgf/README.md]"]
+  node_wave["tsgf-wave Workflow<br/>[workflows/tsgf-wave.js]"]
+  node_wave_plan["tsgf-wave-plan.py<br/>[scripts/tsgf-wave-plan.py]"]
+end
+
+subgraph group_lanes["Worker Lanes"]
+  node_build["tsgf-build (Lane 1)<br/>[skills/tsgf-build/README.md]"]
+  node_qa["tsgf-qa (Lane 2)<br/>[skills/tsgf-qa/README.md]"]
+  node_review["tsgf-review (Lane 3)<br/>[skills/tsgf-review/README.md]"]
+  node_remediation["Auto-Remediation Feedback<br/>[Closed Loop]"]
+end
+
+subgraph group_collect["Signal Collection"]
+  node_collect_skill["/tsgf-collect<br/>[skills/tsgf-collect/README.md]"]
+  node_sentry["Sentry Miner<br/>[collect_sentry.py]"]
+  node_posthog["PostHog Miner<br/>[collect_posthog.py]"]
+  node_custom["GitHub / PRs / Architecture<br/>[collect_custom.py]"]
+end
+
+subgraph group_project["Project Setup & Status"]
+  node_setup["/tsgf onboard<br/>[scripts/tsgf-setup.py]"]
+  node_settings["Project Settings<br/>[scripts/tsgf-settings.py]"]
+  node_status["Board Status<br/>[scripts/tsgf-status.py]"]
+end
+
+subgraph group_safety["Deterministic Safety & Merge"]
+  node_verifier["Test Verification<br/>[verify_commands]"]
+  node_approval["tsgf-merge-gate.sh<br/>[scripts/tsgf-merge-gate.sh]"]
+  node_worktree_guard["guard-worktree-path.py<br/>[.claude/worktrees/ sandbox]"]
+  node_push_guard["guard-protected-push.py<br/>[main/master protection]"]
+  node_secrets_guard["guard-secrets.py<br/>[.env & key redaction]"]
+  node_cleanup["cleanup-wt.py<br/>[auto-prune worktrees]"]
+end
+
+subgraph group_multihost["Multi-Host Runtime Engine"]
+  node_multihost["Unified .agents/ Tree<br/>[Claude Code · Antigravity · Codex · Cursor]"]
+end
+
+node_user(("Project Developer"))
+node_sentry_service{{"Sentry Telemetry"}}
+node_posthog_service{{"PostHog Events"}}
+node_github{{"GitHub Repository & Board"}}
+
+node_user -->|"runs /tsgf"| node_board_skill
+node_user -->|"runs /tsgf-collect"| node_collect_skill
+node_user -->|"onboards project"| node_setup
+
+node_board_skill -->|"plans wave"| node_wave_plan
+node_wave_plan -->|"launches"| node_wave
+node_wave -->|"dispatches"| node_build
+node_wave -->|"dispatches"| node_qa
+node_wave -->|"dispatches"| node_review
+
+node_build -->|"opens draft PR"| node_qa
+node_qa -->|"tests pass"| node_review
+node_qa -->|"tests fail"| node_remediation
+node_review -->|"changes requested"| node_remediation
+node_remediation -->|"structured diff fix"| node_build
+
+node_review -->|"passes review"| node_approval
+node_approval -->|"runs tests"| node_verifier
+node_approval -->|"checked by"| node_push_guard
+node_approval -->|"merges to base"| node_github
+node_approval -->|"triggers"| node_cleanup
+
+node_build -->|"confined by"| node_worktree_guard
+node_build -->|"protected by"| node_secrets_guard
+
+node_collect_skill -->|"mines"| node_sentry
+node_collect_skill -->|"mines"| node_posthog
+node_collect_skill -->|"mines"| node_custom
+node_sentry -->|"queries"| node_sentry_service
+node_posthog -->|"queries"| node_posthog_service
+node_collect_skill -->|"files to Backlog"| node_github
+
+node_setup -->|"configures"| node_settings
+node_setup -->|"wires"| node_multihost
+node_user -->|"checks state"| node_status
+        </div>
+      </div>
+
+      <div class="arch-cards-grid">
+        <div class="arch-card">
+          <div class="arch-card-title"><span>⚡</span> Board Orchestrator</div>
+          <p class="arch-card-desc">The orchestrator strictly coordinates wave batches, resolves task dependency DAGs, and dispatches isolated workers. Never writes product code directly in the orchestrator session.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-title"><span>🔨</span> Isolated Worker Lanes</div>
+          <p class="arch-card-desc">Build creates an isolated worktree under .claude/worktrees/, QA proves ACs with runtime tests &amp; screenshot sheets, and Review performs adversarial verification.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-title"><span>🔄</span> Closed-Loop Auto-Remediation</div>
+          <p class="arch-card-desc">When QA tests fail or Review requests changes, the task bounces back to Building with structured, diff-level failure context for autonomous self-healing.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-title"><span>🛡️</span> Deterministic Safety Guards</div>
+          <p class="arch-card-desc">Python stdlib hooks block credential leaks, live API keys, deletion outside project boundary, and unauthorized pushes to main.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-title"><span>🚀</span> Multi-Host Architecture</div>
+          <p class="arch-card-desc">Maintains canonical skills, scripts, and workflows inside .agents/ and dynamically symlinks into Antigravity IDE, Claude Code, and Codex.</p>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-title"><span>🛰️</span> Signal Collection Engine</div>
+          <p class="arch-card-desc">Mines production exceptions, funnel drops, and architectural smells from Sentry, PostHog, and GitHub, filing verified Backlog tickets.</p>
         </div>
       </div>
     </div>
@@ -754,6 +947,20 @@ btnReset.addEventListener('click', () => {
   simCard.classList.remove('done-card');
   simCard.classList.add('active-run');
   simStatus.textContent = stages[0].text;
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'default' : 'dark',
+  themeVariables: {
+    fontFamily: 'Inter, -apple-system, sans-serif',
+    primaryColor: '#1e3a8a',
+    primaryBorderColor: '#3b82f6',
+    primaryTextColor: '#f8fafc',
+    lineColor: '#64748b'
+  }
 });
 </script>
 </body>
