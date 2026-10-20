@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSGF — Task &amp; Software Generation Framework</title>
+<meta name="description" content="Add tasks, walk away, get merged PRs with proof. Autonomous AI Software Factory for agent runtimes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #090d16;
+  --surface: #111726;
+  --surface-alt: #182033;
+  --border: #222d42;
+  --border-focus: #3b82f6;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.25);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.25);
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 30px var(--accent-glow);
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #f1f5f9;
+  --border: #e2e8f0;
+  --border-focus: #2563eb;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.15);
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nav */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  background: rgba(9, 13, 22, 0.8);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+}
+[data-theme="light"] .navbar { background: rgba(255, 255, 255, 0.85); }
+.nav-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.5);
+}
+.v-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.nav-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-link:hover { color: var(--text); }
+.theme-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  transition: border-color 0.15s;
+}
+.theme-toggle:hover { border-color: var(--accent); }
+
+/* Hero */
+.hero {
+  padding: 72px 24px 48px;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.badge-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: var(--accent);
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text) 40%, var(--text-muted));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p {
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  max-width: 680px;
+  margin: 0 auto 32px;
+}
+
+/* Command Bar */
+.cmd-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 620px;
+  margin: 0 auto 36px;
+  box-shadow: var(--shadow-sm);
+}
+.cmd-box code {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.cmd-box code::before { content: "$ "; color: var(--text-muted); }
+.copy-btn {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Main Sections */
+.section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.section-header {
+  margin-bottom: 24px;
+}
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.section-sub {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Board Simulator */
+.board-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-md);
+  overflow-x: auto;
+}
+.board-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.ctrl-group { display: flex; gap: 8px; align-items: center; }
+.ctrl-btn {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ctrl-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(150px, 1fr));
+  gap: 12px;
+}
+.column {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+.col-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.col-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.card.active-run {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+.card.done-card {
+  border-color: var(--success);
+}
+.card-id {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+.card-title {
+  font-weight: 600;
+  margin: 3px 0 6px;
+  color: var(--text);
+}
+.card-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent);
+}
+
+/* Skills Grid */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.skill-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.skill-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.skill-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.skill-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+.skill-cmd {
+  font-family: var(--font-mono);
+  background: var(--surface-alt);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Guards Matrix */
+.guards-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+.guards-table th, .guards-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.guards-table th {
+  background: var(--surface-alt);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.pill-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 48px;
+}
+.footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav class="navbar" id="top-nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <div class="brand-logo">⚡</div>
+      <span>TSGF</span>
+      <span class="v-pill">v1.0.0</span>
+    </a>
+    <div class="nav-links">
+      <a href="#simulator" class="nav-link">Live Board</a>
+      <a href="#skills" class="nav-link">Skills</a>
+      <a href="#guards" class="nav-link">Guard Hooks</a>
+      <a href="https://github.com/gnanesh-16/TSGF" target="_blank" rel="noopener" class="nav-link">GitHub ↗</a>
+      <button class="theme-toggle" id="theme-btn" type="button" aria-label="Toggle theme">
+        <span>🌓</span> Theme
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="badge-hero">⚡ Autonomous Software Factory</div>
+  <h1>Add tasks, walk away, get merged PRs with proof.</h1>
+  <p>Coordinate autonomous AI coding agents across GitHub Projects with strict safety hooks, verification gates, and adversarial reviews.</p>
+  
+  <div class="cmd-box">
+    <code id="cmd-install">curl -fsSL https://raw.githubusercontent.com/gnanesh-16/TSGF/main/get.sh | bash</code>
+    <button class="copy-btn" id="copy-btn" type="button">Copy</button>
+  </div>
+</header>
+
+<main>
+  <!-- Board Simulator Section -->
+  <section class="section" id="simulator">
+    <div class="section-header">
+      <h2 class="section-title">Live Kanban Simulator</h2>
+      <p class="section-sub">Watch Task #101 navigate from Ready through Building, QA, and Review to Merged Done state.</p>
+    </div>
+
+    <div class="board-container">
+      <div class="board-controls">
+        <div class="ctrl-group">
+          <button class="ctrl-btn active" id="btn-play">▶ Play Story</button>
+          <button class="ctrl-btn" id="btn-reset">↺ Reset</button>
+        </div>
+        <div class="ctrl-group">
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="sim-status">Status: Task #101 queued</span>
+        </div>
+      </div>
+
+      <div class="board-grid">
+        <div class="column" id="col-backlog">
+          <div class="col-header"><span>📥 Backlog</span><small>2</small></div>
+          <div class="col-cards">
+            <div class="card"><div class="card-id">#108</div><div class="card-title">Dark mode toggle</div><span class="card-tag">ui</span></div>
+            <div class="card"><div class="card-id">#109</div><div class="card-title">Export CSV format</div><span class="card-tag">feature</span></div>
+          </div>
+        </div>
+
+        <div class="column" id="col-ready">
+          <div class="col-header"><span>✅ Ready</span><small id="cnt-ready">1</small></div>
+          <div class="col-cards" id="cards-ready">
+            <div class="card active-run" id="sim-card">
+              <div class="card-id">#101</div>
+              <div class="card-title">Receipt size limit bug</div>
+              <span class="card-tag">bug</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="column" id="col-building">
+          <div class="col-header"><span>🔨 Building</span><small id="cnt-building">0</small></div>
+          <div class="col-cards" id="cards-building"></div>
+        </div>
+
+        <div class="column" id="col-qa">
+          <div class="col-header"><span>🔍 QA</span><small id="cnt-qa">0</small></div>
+          <div class="col-cards" id="cards-qa"></div>
+        </div>
+
+        <div class="column" id="col-review">
+          <div class="col-header"><span>🧐 Review</span><small id="cnt-review">0</small></div>
+          <div class="col-cards" id="cards-review"></div>
+        </div>
+
+        <div class="column" id="col-done">
+          <div class="col-header"><span>🎉 Done</span><small id="cnt-done">1</small></div>
+          <div class="col-cards" id="cards-done">
+            <div class="card done-card">
+              <div class="card-id">#099</div>
+              <div class="card-title">Auth refresh token</div>
+              <span class="card-tag" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">✓ Merged</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="column" id="col-blocked">
+          <div class="col-header"><span>🙋 Blocked</span><small>0</small></div>
+          <div class="col-cards"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Ecosystem -->
+  <section class="section" id="skills">
+    <div class="section-header">
+      <h2 class="section-title">8 TSGF Skills Ecosystem</h2>
+      <p class="section-sub">5 skills you invoke directly, and 3 lane workers dispatched autonomously.</p>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">ORCHESTRATOR</div>
+          <h3 class="skill-name">/tsgf</h3>
+          <p class="skill-desc">Plans execution waves, assigns cards, monitors workers, and executes the merge gate.</p>
+        </div>
+        <code class="skill-cmd">/tsgf run my-app</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">LANE 1: BUILD</div>
+          <h3 class="skill-name">tsgf-build</h3>
+          <p class="skill-desc">Creates isolated worktrees, implements minimal code changes, runs unit tests, and opens draft PRs.</p>
+        </div>
+        <code class="skill-cmd">Autonomous lane worker</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">LANE 2: QA</div>
+          <h3 class="skill-name">tsgf-qa</h3>
+          <p class="skill-desc">Validates against Acceptance Criteria, captures screenshot proofs, checks for test gaps.</p>
+        </div>
+        <code class="skill-cmd">Autonomous lane worker</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">LANE 3: REVIEW</div>
+          <h3 class="skill-name">tsgf-review</h3>
+          <p class="skill-desc">Adversarial review lane checking past regressions, evaluating merge policy, and approving PRs.</p>
+        </div>
+        <code class="skill-cmd">Autonomous lane worker</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">COLLECTOR</div>
+          <h3 class="skill-name">/tsgf-collect</h3>
+          <p class="skill-desc">Mines issues from Sentry, PostHog, GitHub issues, and PR patterns, filing verified Backlog cards.</p>
+        </div>
+        <code class="skill-cmd">/tsgf-collect sentry</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">HELPER</div>
+          <h3 class="skill-name">/ui-refine-loop</h3>
+          <p class="skill-desc">Critique &amp; refine loop that polishes front-end pages and UI components to state-of-the-art standards.</p>
+        </div>
+        <code class="skill-cmd">/ui-refine-loop /dashboard</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">HELPER</div>
+          <h3 class="skill-name">/visual</h3>
+          <p class="skill-desc">Generates interactive single-page HTML visualizations for branch recaps and architecture maps.</p>
+        </div>
+        <code class="skill-cmd">/visual recap</code>
+      </div>
+
+      <div class="skill-card">
+        <div>
+          <div class="skill-badge">HELPER</div>
+          <h3 class="skill-name">/tsgf-sync</h3>
+          <p class="skill-desc">Safe git synchronization helper creating atomic commits, rebase-pulling, and non-force pushing.</p>
+        </div>
+        <code class="skill-cmd">/tsgf-sync</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Safety Hooks Section -->
+  <section class="section" id="guards">
+    <div class="section-header">
+      <h2 class="section-title">Deterministic Guard Hooks</h2>
+      <p class="section-sub">Standard Python stdlib hooks executing pre-command checks to keep agent runs safe.</p>
+    </div>
+
+    <table class="guards-table">
+      <thead>
+        <tr>
+          <th>Hook Name</th>
+          <th>Protection Boundary</th>
+          <th>Action on Violation</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>guard-worktree-path.py</code></td>
+          <td>Restricts <code>git worktree add</code> to <code>.claude/worktrees/</code></td>
+          <td>Halts command execution (exit 1)</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+        <tr>
+          <td><code>guard-secrets.py</code></td>
+          <td>Blocks reading/dumping <code>.env</code>, SSH keys, credentials</td>
+          <td>Halts command execution (exit 1)</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+        <tr>
+          <td><code>guard-key-literals.py</code></td>
+          <td>Detects live unredacted API keys/tokens in file writes</td>
+          <td>Rejects file modification (exit 1)</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+        <tr>
+          <td><code>guard-delete-outside.py</code></td>
+          <td>Blocks <code>rm -rf</code> targeting outside project or <code>/</code>, <code>~</code></td>
+          <td>Halts command execution (exit 1)</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+        <tr>
+          <td><code>guard-protected-push.py</code></td>
+          <td>Blocks direct or force pushes to <code>main</code> or <code>master</code></td>
+          <td>Rejects git push (exit 1)</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+        <tr>
+          <td><code>cleanup-wt.py</code></td>
+          <td>Removes merged worktrees and logs recovery records</td>
+          <td>Prunes merged branches post-merge</td>
+          <td><span class="status-pill pill-active">● Active</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>TSGF v1.0.0 &bull; MIT License &bull; <a href="https://github.com/gnanesh-16/TSGF">gnanesh-16/TSGF</a></p>
+</footer>
+
+<script>
+// Theme Toggle
+const themeBtn = document.getElementById('theme-btn');
+themeBtn.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const target = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', target);
+});
+
+// Copy Command Button
+const copyBtn = document.getElementById('copy-btn');
+const cmdCode = document.getElementById('cmd-install');
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(cmdCode.textContent).then(() => {
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+  });
+});
+
+// Kanban Simulator Logic
+const simCard = document.getElementById('sim-card');
+const simStatus = document.getElementById('sim-status');
+const btnPlay = document.getElementById('btn-play');
+const btnReset = document.getElementById('btn-reset');
+
+const stages = [
+  { col: 'cards-ready', text: 'Task #101 queued in Ready', state: 'Ready' },
+  { col: 'cards-building', text: '🔨 tsgf-build: creating isolated worktree & draft PR', state: 'Building' },
+  { col: 'cards-qa', text: '🔍 tsgf-qa: running 32/32 tests & capturing screenshots', state: 'QA' },
+  { col: 'cards-review', text: '🧐 tsgf-review: adversarial review approved', state: 'Review' },
+  { col: 'cards-done', text: '🎉 Merged to main via tsgf-merge-gate.sh! Worktree cleaned up.', state: 'Done' }
+];
+
+let currentStage = 0;
+let timer = null;
+
+function advance() {
+  currentStage = (currentStage + 1) % stages.length;
+  const stage = stages[currentStage];
+  const targetCol = document.getElementById(stage.col);
+  if (targetCol && simCard) {
+    targetCol.appendChild(simCard);
+    simStatus.textContent = stage.text;
+    if (stage.state === 'Done') {
+      simCard.classList.remove('active-run');
+      simCard.classList.add('done-card');
+    } else {
+      simCard.classList.remove('done-card');
+      simCard.classList.add('active-run');
+    }
+  }
+}
+
+btnPlay.addEventListener('click', () => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    btnPlay.textContent = '▶ Play Story';
+    btnPlay.classList.remove('active');
+  } else {
+    timer = setInterval(advance, 2200);
+    btnPlay.textContent = '⏸ Pause';
+    btnPlay.classList.add('active');
+  }
+});
+
+btnReset.addEventListener('click', () => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    btnPlay.textContent = '▶ Play Story';
+    btnPlay.classList.remove('active');
+  }
+  currentStage = 0;
+  document.getElementById('cards-ready').appendChild(simCard);
+  simCard.classList.remove('done-card');
+  simCard.classList.add('active-run');
+  simStatus.textContent = stages[0].text;
+});
+</script>
+</body>
+</html>

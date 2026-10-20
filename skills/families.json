@@ -1,0 +1,20 @@
+{
+  "families": {
+    "orchestrator": {
+      "name": "Orchestrator",
+      "skills": ["tsgf"]
+    },
+    "lanes": {
+      "name": "Lanes",
+      "skills": ["tsgf-build", "tsgf-qa", "tsgf-review"]
+    },
+    "collectors": {
+      "name": "Collectors",
+      "skills": ["tsgf-collect"]
+    },
+    "helpers": {
+      "name": "Helpers",
+      "skills": ["tsgf-sync", "ui-refine-loop", "visual"]
+    }
+  }
+}

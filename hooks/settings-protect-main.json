@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "command": "python3 .agents/hooks/guard-protected-push.py"
+      }
+    ]
+  }
+}

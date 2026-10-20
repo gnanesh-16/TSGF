@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "command": "python3 .agents/hooks/guard-worktree-path.py"
+      },
+      {
+        "matcher": "run_command",
+        "command": "python3 .agents/hooks/guard-secrets.py"
+      },
+      {
+        "matcher": "run_command",
+        "command": "python3 .agents/hooks/guard-delete-outside.py"
+      },
+      {
+        "matcher": "write_to_file",
+        "command": "python3 .agents/hooks/guard-key-literals.py"
+      },
+      {
+        "matcher": "replace_file_content",
+        "command": "python3 .agents/hooks/guard-key-literals.py"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "run_command",
+        "command": "python3 .agents/hooks/cleanup-wt.py"
+      }
+    ]
+  }
+}
