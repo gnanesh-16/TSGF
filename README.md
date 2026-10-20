@@ -4,15 +4,16 @@
 
 <p><strong>Add tasks, walk away, get merged PRs with proof.</strong></p>
 
-<p>Autonomous AI Software Factory for Claude Code, Codex, and Agent Runtimes.</p>
+<p>Autonomous AI Software Factory for <strong>Google Antigravity (Primary)</strong>, Claude Code, and Agent Runtimes.</p>
 
 <p>
 <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-1f883d?style=flat-square">
 <img alt="License" src="https://img.shields.io/badge/license-MIT-0969da?style=flat-square">
-<img alt="Agents" src="https://img.shields.io/badge/agents-Claude%20%7C%20Codex%20%7C%20Antigravity-orange?style=flat-square">
+<img alt="Agents" src="https://img.shields.io/badge/primary-Google%20Antigravity-4285F4?style=flat-square">
+<img alt="Agents" src="https://img.shields.io/badge/agents-Claude%20%7C%20Codex%20%7C%20Cursor-orange?style=flat-square">
 </p>
 
-<p><a href="#install">Install</a> · <a href="#quick-start">Quick Start</a> · <a href="#architecture">Architecture</a> · <a href="diagrams/index.html">Live Simulator</a> · <a href="diagrams/skill-map/index.html">Interactive Skill Map ↗</a> · <a href="#skills">Skills</a> · <a href="#guard-hooks">Guards</a></p>
+<p><a href="#install">Install</a> · <a href="#quick-start">Quick Start</a> · <a href="#architecture">Architecture</a> · <a href="website/index.html"><strong>🌐 Live Web Dashboard</strong></a> · <a href="diagrams/skill-map/index.html">Interactive Skill Map ↗</a> · <a href="diagrams/index.html">Kanban Sim</a> · <a href="#skills">Skills</a> · <a href="#guard-hooks">Guards</a> · <a href="docs/hosts.md">Hosts</a></p>
 
 </div>
 

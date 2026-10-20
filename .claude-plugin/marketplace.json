@@ -1,0 +1,8 @@
+{
+  "name": "tsgf",
+  "version": "1.0.0",
+  "description": "Task & Software Generation Framework: Autonomous AI Software Factory for agent runtimes",
+  "author": "Gnanesh Balusa",
+  "license": "MIT",
+  "repository": "https://github.com/gnanesh-16/TSGF"
+}

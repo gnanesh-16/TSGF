@@ -1,0 +1,14 @@
+{
+  "name": "tsgf",
+  "version": "1.0.0",
+  "skills": [
+    "skills/tsgf",
+    "skills/tsgf-build",
+    "skills/tsgf-qa",
+    "skills/tsgf-review",
+    "skills/tsgf-collect",
+    "skills/ui-refine-loop",
+    "skills/visual",
+    "skills/tsgf-sync"
+  ]
+}

@@ -76,6 +76,8 @@ def main():
                     cmd = tool_input.get("command") or tool_input.get("CommandLine") or ""
                 elif isinstance(tool_input, str):
                     cmd = tool_input
+                if not cmd:
+                    cmd = data.get("command") or data.get("CommandLine") or ""
         except Exception:
             cmd = raw_input
     elif len(sys.argv) > 1:

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TSGF Project Configuration Schema",
+  "type": "object",
+  "required": ["board_id", "base_branch", "verify_commands"],
+  "properties": {
+    "board_id": {
+      "type": "string",
+      "description": "GitHub Project board number or identifier"
+    },
+    "base_branch": {
+      "type": "string",
+      "default": "main",
+      "description": "Base target branch for squash-merges"
+    },
+    "verify_commands": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Test and verification commands that must exit 0 before merge"
+    },
+    "model_tier": {
+      "type": "string",
+      "enum": ["default", "low", "high"],
+      "default": "default"
+    },
+    "auto_max_lines": {
+      "type": "integer",
+      "default": 400,
+      "description": "Maximum allowed changed lines before requiring human approval"
+    },
+    "collect": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["sentry", "posthog", "issues", "prs"]
+        },
+        "window_days": {
+          "type": "integer",
+          "default": 14
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+name: collect-duplicate
+description: Verifies that duplicate telemetry signals are clustered into one card
+skill: tsgf-collect
+timeout_seconds: 60
+grader: graders/grade.py

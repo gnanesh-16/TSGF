@@ -1,0 +1,5 @@
+name: worktree-isolation
+description: Verifies that lane workers operate exclusively in isolated worktrees
+skill: tsgf-build
+timeout_seconds: 60
+grader: graders/grade.py
